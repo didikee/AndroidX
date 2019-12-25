@@ -92,20 +92,32 @@ public class StorageConnector {
         if (inputUri == null) {
             Log.d(TAG, "prepare skip input uri prepare");
         } else {
-            // 1. create copy file
-            inputUriFile = new File(internalTempDir, getRandomFileName());
-            // 2. copy file
-            boolean b = copyUri2File(context, inputUri, inputUriFile);
-            if (!b) {
-                return false;
+            String realPath = getRealPath(inputUri);
+            if (!TextUtils.isEmpty(realPath)) {
+                File realInputFile = new File(realPath);
+                if (realInputFile.exists()) {
+                    inputUriFile = realInputFile;
+                }
             }
+            if (inputUriFile != null && inputUriFile.exists()) {
+                return true;
+            } else {
+                // 1. create copy file
+                inputUriFile = new File(internalTempDir, getRandomFileName());
+                // 2. copy file
+                boolean b = copyUri2File(context, inputUri, inputUriFile);
+                if (!b) {
+                    return false;
+                }
+            }
+
         }
         // 3. create temp save file for c program
         internalTempSaveFile = new File(internalTempDir, filename);
         return true;
     }
 
-    public File getRealPath(Uri inputUri) {
+    public String getRealPath(Uri inputUri) {
         // TODO 等待实现
         return null;
     }
@@ -195,7 +207,7 @@ public class StorageConnector {
         return null;
     }
 
-    private boolean copyUri2File(Context context, Uri uri, File outputFile) {
+    protected boolean copyUri2File(Context context, Uri uri, File outputFile) {
         long start = System.currentTimeMillis();
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
@@ -218,7 +230,7 @@ public class StorageConnector {
         return true;
     }
 
-    private String getRandomFileName() {
+    protected String getRandomFileName() {
         return System.currentTimeMillis() + "";
     }
 
@@ -249,7 +261,7 @@ public class StorageConnector {
         return cacheDir;
     }
 
-    private String getMimeType(String filename) {
+    protected String getMimeType(String filename) {
         String mimeType = MimeType.UNKNOWN;
         if (!TextUtils.isEmpty(filename)) {
             try {
@@ -270,7 +282,7 @@ public class StorageConnector {
         return mimeType;
     }
 
-    private Uri getMediaLocation(String mimeType) {
+    protected Uri getMediaLocation(String mimeType) {
         Uri location;
         switch (mimeType) {
             case MimeType.GIF:
