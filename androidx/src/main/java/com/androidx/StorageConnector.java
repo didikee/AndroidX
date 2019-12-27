@@ -30,9 +30,9 @@ import java.io.OutputStream;
 public class StorageConnector {
     private static final String TAG = "StorageConnector";
     private static final String DIR_DATA_CONNECT_CACHE = "connect";
-    private final File internalTempDir;
+    protected final File internalTempDir;
     // 用于复制外部的uri
-    private File inputUriFile;
+    protected File inputUriFile;
     /**
      * 用于第三方c的使用
      * 例如ffmpeg的工作流如下:
@@ -45,7 +45,7 @@ public class StorageConnector {
      *
      * 这样就做到了输入uri,然后得到uri
      */
-    private File internalTempSaveFile;
+    protected File internalTempSaveFile;
     private final Uri inputUri;
     private final Context context;
     private final String filename;
@@ -113,13 +113,29 @@ public class StorageConnector {
 
         }
         // 3. create temp save file for c program
-        internalTempSaveFile = new File(internalTempDir, filename);
+        internalTempSaveFile = createOutputFile();
         return true;
+    }
+
+    protected File createOutputFile() {
+        return new File(internalTempDir, filename);
     }
 
     public String getRealPath(Uri inputUri) {
         // TODO 等待实现
         return null;
+    }
+
+    public Uri getInputUri() {
+        return inputUri;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public String getFolderPath() {
+        return folderPath;
     }
 
     /**
