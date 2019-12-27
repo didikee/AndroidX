@@ -10,7 +10,7 @@ import android.util.Log;
  * description: 
  */
 public class LogUtils {
-    private static final String TAG = "LogUtils";
+    private static final String TAG = "AndroidX";
 
     public static void d(String message) {
         if (BuildConfig.DEBUG) {

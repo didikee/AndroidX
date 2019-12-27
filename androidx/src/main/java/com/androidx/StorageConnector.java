@@ -30,6 +30,7 @@ import java.io.OutputStream;
 public class StorageConnector {
     private static final String TAG = "StorageConnector";
     private static final String DIR_DATA_CONNECT_CACHE = "connect";
+    protected final Context context;
     protected final File internalTempDir;
     // 用于复制外部的uri
     protected File inputUriFile;
@@ -47,7 +48,7 @@ public class StorageConnector {
      */
     protected File internalTempSaveFile;
     private final Uri inputUri;
-    private final Context context;
+
     private final String filename;
     private final String folderPath;
     private String mimeType;

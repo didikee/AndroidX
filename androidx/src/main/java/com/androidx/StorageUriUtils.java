@@ -4,8 +4,6 @@ import android.content.ContentValues;
 import android.os.Build;
 import android.provider.MediaStore;
 
-import java.io.File;
-
 /**
  * user author: didikee
  * create time: 2019-11-29 18:02
@@ -55,12 +53,7 @@ public final class StorageUriUtils {
             values.put(MediaStore.Images.Media.RELATIVE_PATH, folderPath);
             values.put(MediaStore.MediaColumns.IS_PENDING, true);
         } else {
-            String data;
-            if (folderPath.endsWith(File.separator)) {
-                data = folderPath + filename;
-            } else {
-                data = folderPath + File.separator + filename;
-            }
+            String data = StorageSaveUtils.getDataPath(folderPath, filename);
             values.put(MediaStore.MediaColumns.DATA, data);
         }
         //Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
