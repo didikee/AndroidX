@@ -101,7 +101,8 @@ public class StorageConnector {
                 }
             }
             if (inputUriFile != null && inputUriFile.exists()) {
-                return true;
+                // do nothing
+                // 我们不需要复制uri了，直接使用uri对应的文件地址对于c库来说更便捷，特别是ffmpeg之类的库
             } else {
                 // 1. create copy file
                 inputUriFile = new File(internalTempDir, getRandomFileName());
