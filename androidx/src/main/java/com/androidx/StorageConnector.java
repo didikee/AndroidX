@@ -292,6 +292,12 @@ public class StorageConnector {
                     mimeType = MimeType.PNG;
                 } else if ("jpeg".equalsIgnoreCase(extension)) {
                     mimeType = MimeType.JPEG;
+                }else if ("mp3".equalsIgnoreCase(extension)){
+                    mimeType = MimeType.MP3;
+                }else if ("aac".equalsIgnoreCase(extension)){
+                    mimeType = MimeType.AAC;
+                }else if ("wav".equalsIgnoreCase(extension)){
+                    mimeType = MimeType.WAV;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -310,6 +316,11 @@ public class StorageConnector {
                 break;
             case MimeType.MP4:
                 location = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                break;
+            case MimeType.MP3:
+            case MimeType.AAC:
+            case MimeType.WAV:
+                location = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 break;
             default:
                 location = MediaStore.Downloads.EXTERNAL_CONTENT_URI;

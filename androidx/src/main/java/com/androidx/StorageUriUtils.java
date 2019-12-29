@@ -56,7 +56,6 @@ public final class StorageUriUtils {
             String data = StorageSaveUtils.getDataPath(folderPath, filename);
             values.put(MediaStore.MediaColumns.DATA, data);
         }
-        //Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         return values;
     }
 

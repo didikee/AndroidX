@@ -127,7 +127,6 @@ public final class StorageSaveUtils {
         }
         String mimeType = "";
 
-
         String fileName = mediaFile.getName();
         try {
             String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -139,6 +138,12 @@ public final class StorageSaveUtils {
                 mimeType = MimeType.GIF;
             } else if ("mp4".equalsIgnoreCase(extension)) {
                 mimeType = MimeType.MP4;
+            } else if ("mp3".equalsIgnoreCase(extension)) {
+                mimeType = MimeType.MP3;
+            } else if ("aac".equalsIgnoreCase(extension)) {
+                mimeType = MimeType.AAC;
+            } else if ("wav".equalsIgnoreCase(extension)) {
+                mimeType = MimeType.WAV;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,10 +155,7 @@ public final class StorageSaveUtils {
 
         ContentValues contentValues;
         Uri destUri;
-        if (MimeType.MP4.equalsIgnoreCase(mimeType)) {
-            contentValues = StorageUriUtils.makeVideoValues(folderPath, fileName, 0);
-            destUri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues);
-        } else {
+        if (mimeType.startsWith("image")) {
             int width = 0;
             int height = 0;
             try {
@@ -167,6 +169,15 @@ public final class StorageSaveUtils {
             }
             contentValues = StorageUriUtils.makeImageValues(folderPath, fileName, mimeType, width, height, 0);
             destUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        } else if (mimeType.startsWith("video")) {
+            contentValues = StorageUriUtils.makeVideoValues(folderPath, fileName, 0);
+            destUri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues);
+        } else if (mimeType.startsWith("audio")) {
+            contentValues = StorageUriUtils.makeMediaValues(folderPath, fileName, mimeType, 0, 0, 0);
+            destUri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
+        } else {
+            contentValues = StorageUriUtils.makeMediaValues(folderPath, fileName, mimeType, 0, 0, 0);
+            destUri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
         }
         OutputStream outputStream = null;
         FileInputStream inputStream = null;
@@ -294,8 +305,12 @@ public final class StorageSaveUtils {
         Uri mediaStoreUri;
         if (mimeType.startsWith("video")) {
             mediaStoreUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        } else {
+        } else if (mimeType.startsWith("image")) {
             mediaStoreUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else if (mimeType.startsWith("audio")) {
+            mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
         }
         Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
         if (destUri == null) {

@@ -12,6 +12,10 @@ public final class MimeType {
     public static final String GIF = "image/gif";
     public static final String IMAGE = "image/*";
     public static final String VIDEO = "video/*";
+    // audio
+    public static final String MP3 = "audio/mpeg";
+    public static final String AAC = "audio/aac";
+    public static final String WAV = "audio/x-wav";
 
     public static final String MP4 = "video/mp4";
 }
