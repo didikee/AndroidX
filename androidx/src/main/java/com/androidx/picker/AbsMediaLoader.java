@@ -28,24 +28,36 @@ public abstract class AbsMediaLoader {
     }
 
     protected String[] getParentInfoFromRelativePath(String relativePath) {
+        String parentName = "";
+        String parentPath = "";
         if (!TextUtils.isEmpty(relativePath)) {
             // 根据相对路径来判断
             // DCIM/MY FOLDER/SUB/demo.png
             // android 10 DCIM/MY FOLDER/SUB
-            String parentName = "";
-            String parentPath = "";
             if (!TextUtils.isEmpty(relativePath) && relativePath.contains(File.separator)) {
-                int lastIndexOf = relativePath.lastIndexOf(File.separator);
-                if (lastIndexOf != -1) {
-                    parentName = relativePath.substring(lastIndexOf + 1);
-                    parentPath = relativePath.substring(0, lastIndexOf);
+                String[] split = relativePath.split(File.separator);
+                int length = split.length;
+                String folderName = "";
+                if (length > 0) {
+                    String lastStr = split[length - 1];
+                    if (TextUtils.isEmpty(lastStr)) {
+                        if (length - 2 >= 0) {
+                            String preLastStr = split[length - 2];
+                            if (!TextUtils.isEmpty(preLastStr)) {
+                                folderName = preLastStr;
+                            }
+                        }
+                    } else {
+                        folderName = lastStr;
+                    }
                 }
+                parentName = folderName;
+                parentPath = relativePath;
             } else {
                 parentName = relativePath;
                 parentPath = relativePath;
             }
-            return new String[]{parentName, parentPath};
         }
-        return new String[]{"", ""};
+        return new String[]{parentName, parentPath};
     }
 }
