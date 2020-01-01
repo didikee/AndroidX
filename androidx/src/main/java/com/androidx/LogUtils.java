@@ -11,21 +11,26 @@ import android.util.Log;
  */
 public class LogUtils {
     private static final String TAG = "AndroidX";
+    private static boolean DEBUG = false;
+    
+    public static void setDebug(boolean debug){
+        DEBUG = debug;
+    }
 
     public static void d(String message) {
-        if (BuildConfig.DEBUG) {
+        if (DEBUG) {
             Log.d(TAG, message);
         }
     }
 
     public static void w(String message) {
-        if (BuildConfig.DEBUG) {
+        if (DEBUG) {
             Log.w(TAG, message);
         }
     }
 
     public static void e(String message) {
-        if (BuildConfig.DEBUG) {
+        if (DEBUG) {
             Log.e(TAG, message);
         }
     }

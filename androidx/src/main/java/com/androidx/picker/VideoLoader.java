@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import com.androidx.R;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -19,7 +18,7 @@ import java.util.ArrayList;
  * create time: 2019-07-18 13:43
  * description: 获取手机里的视频
  */
-public class VideoLoader {
+public class VideoLoader extends AbsMediaLoader{
 
     public ArrayList<MediaFolder> getVideos(Context context) {
         return getVideos(context, "");
@@ -89,35 +88,15 @@ public class VideoLoader {
             String parentName = "";
             String parentPath = "";
             if (!TextUtils.isEmpty(data)) {
-                // 根据java系统来判断
-                File file = new File(data);
-                if (!file.exists() || file.length() <= 0) {
-                    continue;
-                }
-                File imageParentFile = file.getParentFile();
-                if (imageParentFile == null) {
-                    continue;
-                }
-                parentName = imageParentFile.getName();
-                parentPath = imageParentFile.getAbsolutePath();
+                String[] parentInfo = getParentInfoFromData(data);
+                parentName = parentInfo[0];
+                parentPath = parentInfo[1];
             }
+
             if (!TextUtils.isEmpty(relativePath)) {
-                // 根据相对路径来判断
-                // DCIM/MY FOLDER/SUB/demo.png
-                // android 10 DCIM/MY FOLDER/SUB
-                if (!TextUtils.isEmpty(relativePath) && relativePath.contains(File.separator)) {
-                    int lastIndexOf = relativePath.lastIndexOf(File.separator);
-                    if (lastIndexOf != -1) {
-                        parentName = relativePath.substring(lastIndexOf + 1);
-                        parentPath = relativePath.substring(0, lastIndexOf);
-                    }
-//                    if (split.length > 0) {
-//                        parentName = split[split.length - 1];
-//                    }
-                } else {
-                    parentName = relativePath;
-                    parentPath = relativePath;
-                }
+                String[] parentInfo = getParentInfoFromRelativePath(relativePath);
+                parentName = parentInfo[0];
+                parentPath = parentInfo[1];
             }
 
             long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
