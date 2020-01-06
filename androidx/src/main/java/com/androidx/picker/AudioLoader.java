@@ -20,11 +20,8 @@ import java.util.ArrayList;
  */
 public class AudioLoader extends AbsMediaLoader {
 
-    public ArrayList<MediaFolder> getAudios(Context context) {
-        return getAudios(context, "");
-    }
-
-    public ArrayList<MediaFolder> getAudios(Context context, String folderPath) {
+    @Override
+    public ArrayList<MediaFolder> get(Context context, String folderPath) {
         if (context == null) {
             return null;
         }
@@ -33,10 +30,10 @@ public class AudioLoader extends AbsMediaLoader {
             return null;
         }
 
-        Uri externalContentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String order = MediaStore.MediaColumns.DATE_ADDED + " DESC";
-        String selection = MediaStore.MediaColumns.MIME_TYPE + "=?";
-        String[] selectionArgs = new String[]{"audio/"};
+        Uri externalContentUri = getContentUri();
+        String order = getOrder();
+        String selection = getSelection();
+        String[] selectionArgs = getSelectionArgs();
 
         // projections
         ArrayList<String> projections = new ArrayList<>();
@@ -46,6 +43,7 @@ public class AudioLoader extends AbsMediaLoader {
         projections.add(MediaStore.Audio.Media.MIME_TYPE);
         projections.add(MediaStore.Audio.Media.DATE_ADDED);
         projections.add(MediaStore.Audio.Media.DATE_MODIFIED);
+        // audio
         projections.add(MediaStore.Audio.Media.DURATION);
         /**
          * MediaStore.Video.Media.RELATIVE_PATH
@@ -97,11 +95,13 @@ public class AudioLoader extends AbsMediaLoader {
                 parentPath = parentInfo[1];
             }
 
+            // common
             long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
             String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE));
-            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
             long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
             long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
+
+            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
 
             //封装实体
             MediaItem mediaItem = new MediaItem(uri);
@@ -144,4 +144,25 @@ public class AudioLoader extends AbsMediaLoader {
         cursor.close();
         return mediaFolders;
     }
+
+    @Override
+    protected Uri getContentUri() {
+        return MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+    }
+
+    @Override
+    protected String getOrder() {
+        return MediaStore.MediaColumns.DATE_ADDED + " DESC";
+    }
+
+    @Override
+    protected String getSelection() {
+        return MediaStore.MediaColumns.MIME_TYPE + "=?";
+    }
+
+    @Override
+    protected String[] getSelectionArgs() {
+        return new String[]{"audio/*"};
+    }
+
 }

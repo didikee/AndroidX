@@ -18,13 +18,10 @@ import java.util.ArrayList;
  * create time: 2019-07-18 13:43
  * description: 获取手机里的视频
  */
-public class VideoLoader extends AbsMediaLoader{
+public class VideoLoader extends AbsMediaLoader {
 
-    public ArrayList<MediaFolder> getVideos(Context context) {
-        return getVideos(context, "");
-    }
-
-    public ArrayList<MediaFolder> getVideos(Context context, String folderPath) {
+    @Override
+    public ArrayList<MediaFolder> get(Context context, String folderPath) {
         if (context == null) {
             return null;
         }
@@ -33,10 +30,10 @@ public class VideoLoader extends AbsMediaLoader{
             return null;
         }
 
-        Uri externalContentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        String order = MediaStore.MediaColumns.DATE_ADDED + " DESC";
-        String selection = MediaStore.MediaColumns.MIME_TYPE + "=?";
-        String[] selectionArgs = new String[]{"video/mp4"};
+        Uri externalContentUri = getContentUri();
+        String order = getOrder();
+        String selection = getSelection();
+        String[] selectionArgs = getSelectionArgs();
 
         // projections
         ArrayList<String> projections = new ArrayList<>();
@@ -149,5 +146,25 @@ public class VideoLoader extends AbsMediaLoader{
         }
         cursor.close();
         return mediaFolders;
+    }
+
+    @Override
+    protected Uri getContentUri() {
+        return MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+    }
+
+    @Override
+    protected String getOrder() {
+        return MediaStore.MediaColumns.DATE_ADDED + " DESC";
+    }
+
+    @Override
+    protected String getSelection() {
+        return MediaStore.MediaColumns.MIME_TYPE + "=?";
+    }
+
+    @Override
+    protected String[] getSelectionArgs() {
+        return new String[]{"video/mp4"};
     }
 }

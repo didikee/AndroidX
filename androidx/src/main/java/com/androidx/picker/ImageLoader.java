@@ -23,22 +23,20 @@ public class ImageLoader extends AbsMediaLoader {
     public static final int IMAGE_WITHOUT_GIF = 1;
     public static final int GIF = 2;
     private int mType;
+    private String mMimeType = "";
 
     public ArrayList<MediaFolder> load(Context context, int type) {
         this.mType = type;
         if (mType < 0 || mType > 2) {
             return null;
         }
-        String mimeType;
         if (mType == GIF) {
-            mimeType = "image/gif";
-        } else {
-            mimeType = "";
+            mMimeType = "image/gif";
         }
-        return load(context, mimeType);
+        return load(context);
     }
 
-    private ArrayList<MediaFolder> load(Context context, String mimeType) {
+    private ArrayList<MediaFolder> load(Context context) {
         if (context == null) {
             return null;
         }
@@ -46,18 +44,10 @@ public class ImageLoader extends AbsMediaLoader {
         if (contentResolver == null) {
             return null;
         }
-        Uri externalContentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String order = MediaStore.MediaColumns.DATE_ADDED + " DESC";
-        String selection;
-        String[] selectionArgs;
-        if (TextUtils.isEmpty(mimeType)) {
-            // 空表示选择全部
-            selectionArgs = null;
-            selection = null;
-        } else {
-            selectionArgs = new String[]{mimeType};
-            selection = MediaStore.MediaColumns.MIME_TYPE + "=?";
-        }
+        Uri externalContentUri = getContentUri();
+        String order = getOrder();
+        String selection = getSelection();
+        String[] selectionArgs = getSelectionArgs();
 
         // projections
         ArrayList<String> projections = new ArrayList<>();
@@ -88,12 +78,12 @@ public class ImageLoader extends AbsMediaLoader {
             //查询数据
             String id = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
             String displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
-            String mimeTypeName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+            String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
 
             // 现在全部改为uri来实现
             Uri uri = ContentUris.withAppendedId(externalContentUri, Long.parseLong(id));
 
-            if (mType == IMAGE_WITHOUT_GIF && isGif(displayName, mimeTypeName)) {
+            if (mType == IMAGE_WITHOUT_GIF && isGif(displayName, mimeType)) {
                 continue;
             }
 
@@ -183,4 +173,38 @@ public class ImageLoader extends AbsMediaLoader {
         return false;
     }
 
+    @Override
+    protected Uri getContentUri() {
+        return MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    }
+
+    @Override
+    protected String getOrder() {
+        return MediaStore.MediaColumns.DATE_ADDED + " DESC";
+    }
+
+    @Override
+    protected String getSelection() {
+        if (TextUtils.isEmpty(mMimeType)) {
+            // 空表示选择全部
+            return null;
+        } else {
+            return MediaStore.MediaColumns.MIME_TYPE + "=?";
+        }
+    }
+
+    @Override
+    protected String[] getSelectionArgs() {
+        if (TextUtils.isEmpty(mMimeType)) {
+            // 空表示选择全部
+            return null;
+        } else {
+            return new String[]{mMimeType};
+        }
+    }
+
+    @Override
+    public ArrayList<MediaFolder> get(Context context, String folderPath) {
+        return load(context,IMAGE);
+    }
 }

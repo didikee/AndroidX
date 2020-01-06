@@ -1,8 +1,11 @@
 package com.androidx.picker;
 
+import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * user author: didikee
@@ -10,6 +13,21 @@ import java.io.File;
  * description: 
  */
 public abstract class AbsMediaLoader {
+
+    protected abstract Uri getContentUri();
+
+    protected abstract String getOrder();
+
+    protected abstract String getSelection();
+
+    protected abstract String[] getSelectionArgs();
+
+    public abstract ArrayList<MediaFolder> get(Context context, String folderPath);
+
+    public ArrayList<MediaFolder> get(Context context) {
+        return get(context, "");
+    }
+
 
     protected String[] getParentInfoFromData(String data) {
         if (!TextUtils.isEmpty(data)) {
@@ -60,4 +78,5 @@ public abstract class AbsMediaLoader {
         }
         return new String[]{parentName, parentPath};
     }
+
 }
