@@ -157,12 +157,12 @@ public class AudioLoader extends AbsMediaLoader {
 
     @Override
     protected String getSelection() {
-        return MediaStore.MediaColumns.MIME_TYPE + "=?";
+        return null;
     }
 
     @Override
     protected String[] getSelectionArgs() {
-        return new String[]{"audio/*"};
+        return null;
     }
 
 }
