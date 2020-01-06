@@ -14,7 +14,7 @@ public class MediaFolder implements Serializable, Parcelable {
 
     public String name;  //当前文件夹的名字
     public String path;  //当前文件夹的路径
-    public ArrayList<MediaItem> images;  //当前文件夹下所有图片的集合
+    public ArrayList<MediaItem> items;  //当前文件夹下所有图片的集合
 
     public boolean check; //当前文件夹是否选中
 
@@ -22,8 +22,8 @@ public class MediaFolder implements Serializable, Parcelable {
     }
 
     public MediaItem getCover() {
-        if (images != null && images.size() > 0) {
-            return images.get(0);
+        if (items != null && items.size() > 0) {
+            return items.get(0);
         }
         return null;
     }
@@ -44,7 +44,7 @@ public class MediaFolder implements Serializable, Parcelable {
     protected MediaFolder(Parcel in) {
         name = in.readString();
         path = in.readString();
-        images = in.createTypedArrayList(MediaItem.CREATOR);
+        items = in.createTypedArrayList(MediaItem.CREATOR);
         check = in.readByte() != 0;
     }
 
@@ -69,7 +69,7 @@ public class MediaFolder implements Serializable, Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(path);
-        dest.writeTypedList(images);
+        dest.writeTypedList(items);
         dest.writeByte((byte) (check ? 1 : 0));
     }
 }

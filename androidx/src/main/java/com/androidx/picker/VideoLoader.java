@@ -130,11 +130,11 @@ public class VideoLoader extends AbsMediaLoader{
             mediaFolder.path = parentPath;
 
             if (mediaFolders.contains(mediaFolder)) {
-                mediaFolders.get(mediaFolders.indexOf(mediaFolder)).images.add(mediaItem);
+                mediaFolders.get(mediaFolders.indexOf(mediaFolder)).items.add(mediaItem);
             } else {
                 ArrayList<MediaItem> images = new ArrayList<>();
                 images.add(mediaItem);
-                mediaFolder.images = images;
+                mediaFolder.items = images;
                 mediaFolders.add(mediaFolder);
             }
         }
@@ -144,7 +144,7 @@ public class VideoLoader extends AbsMediaLoader{
             MediaFolder allImagesFolder = new MediaFolder();
             allImagesFolder.name = context.getString(R.string.recently);
             allImagesFolder.path = "";
-            allImagesFolder.images = allMedias;
+            allImagesFolder.items = allMedias;
             mediaFolders.add(0, allImagesFolder);  //确保第一条是所有图片
         }
         cursor.close();

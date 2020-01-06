@@ -16,11 +16,15 @@ public final class MimeType {
     // video
     public static final String VIDEO = "video/*";
     public static final String MP4 = "video/mp4";
+    public static final String _3GP = "video/3gp";
     // audio
     public static final String AUDIO = "audio/*";
     public static final String MP3 = "audio/mpeg";
     public static final String AAC = "audio/aac";
+    public static final String _3GPP = "audio/3gpp";
     public static final String WAV = "audio/x-wav";
+    public static final String AMR = "audio/amr";
+    public static final String M4A = "audio/mpeg";
 
 
 }

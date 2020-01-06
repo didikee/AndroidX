@@ -15,30 +15,16 @@ import java.util.ArrayList;
 
 /**
  * user author: didikee
- * create time: 2019-07-18 13:43
- * description: 获取手机里的视频
+ * create time: 2020-01-6 1:24
+ * description: 获取手机里的音频
  */
-public class ImageLoader extends AbsMediaLoader {
-    public static final int IMAGE = 0;
-    public static final int IMAGE_WITHOUT_GIF = 1;
-    public static final int GIF = 2;
-    private int mType;
+public class AudioLoader extends AbsMediaLoader {
 
-    public ArrayList<MediaFolder> load(Context context, int type) {
-        this.mType = type;
-        if (mType < 0 || mType > 2) {
-            return null;
-        }
-        String mimeType;
-        if (mType == GIF) {
-            mimeType = "image/gif";
-        } else {
-            mimeType = "";
-        }
-        return load(context, mimeType);
+    public ArrayList<MediaFolder> getAudios(Context context) {
+        return getAudios(context, "");
     }
 
-    private ArrayList<MediaFolder> load(Context context, String mimeType) {
+    public ArrayList<MediaFolder> getAudios(Context context, String folderPath) {
         if (context == null) {
             return null;
         }
@@ -46,35 +32,32 @@ public class ImageLoader extends AbsMediaLoader {
         if (contentResolver == null) {
             return null;
         }
-        Uri externalContentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        Uri externalContentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String order = MediaStore.MediaColumns.DATE_ADDED + " DESC";
-        String selection;
-        String[] selectionArgs;
-        if (TextUtils.isEmpty(mimeType)) {
-            // 空表示选择全部
-            selectionArgs = null;
-            selection = null;
-        } else {
-            selectionArgs = new String[]{mimeType};
-            selection = MediaStore.MediaColumns.MIME_TYPE + "=?";
-        }
+        String selection = MediaStore.MediaColumns.MIME_TYPE + "=?";
+        String[] selectionArgs = new String[]{"audio/"};
 
         // projections
         ArrayList<String> projections = new ArrayList<>();
-        projections.add(MediaStore.MediaColumns._ID);
-        projections.add(MediaStore.MediaColumns.DISPLAY_NAME);
-        projections.add(MediaStore.MediaColumns.SIZE);
-        projections.add(MediaStore.MediaColumns.WIDTH);
-        projections.add(MediaStore.MediaColumns.HEIGHT);
-        projections.add(MediaStore.MediaColumns.MIME_TYPE);
-        projections.add(MediaStore.MediaColumns.DATE_ADDED);
-        projections.add(MediaStore.MediaColumns.DATE_MODIFIED);
+        projections.add(MediaStore.Audio.Media._ID);
+        projections.add(MediaStore.Audio.Media.DISPLAY_NAME);
+        projections.add(MediaStore.Audio.Media.SIZE);
+        projections.add(MediaStore.Audio.Media.MIME_TYPE);
+        projections.add(MediaStore.Audio.Media.DATE_ADDED);
+        projections.add(MediaStore.Audio.Media.DATE_MODIFIED);
+        projections.add(MediaStore.Audio.Media.DURATION);
+        /**
+         * MediaStore.Video.Media.RELATIVE_PATH
+         * 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
+         *
+         * MediaStore.Video.Media.DATA 在android10上已经过时了
+         * 真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
+         */
         if (Build.VERSION.SDK_INT >= 29/*android 10*/) {
-            // 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
-            projections.add(MediaStore.MediaColumns.RELATIVE_PATH);
+            projections.add(MediaStore.Audio.Media.RELATIVE_PATH);
         } else {
-            // 真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
-            projections.add(MediaStore.MediaColumns.DATA);
+            projections.add(MediaStore.Audio.Media.DATA);
         }
 
         Cursor cursor = contentResolver.query(externalContentUri, projections.toArray(new String[projections.size()]), selection, selectionArgs, order);
@@ -87,15 +70,10 @@ public class ImageLoader extends AbsMediaLoader {
         while (cursor.moveToNext()) {
             //查询数据
             String id = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
-            String displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
-            String mimeTypeName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+            String displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
 
             // 现在全部改为uri来实现
             Uri uri = ContentUris.withAppendedId(externalContentUri, Long.parseLong(id));
-
-            if (mType == IMAGE_WITHOUT_GIF && isGif(displayName, mimeTypeName)) {
-                continue;
-            }
 
             String data = "";
             String relativePath = "";
@@ -119,9 +97,9 @@ public class ImageLoader extends AbsMediaLoader {
                 parentPath = parentInfo[1];
             }
 
-            long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE));
-            int width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
-            int height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
+            long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
+            String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE));
+            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
             long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
             long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
 
@@ -129,14 +107,14 @@ public class ImageLoader extends AbsMediaLoader {
             MediaItem mediaItem = new MediaItem(uri);
             mediaItem.setDisplayName(displayName);
             mediaItem.setSize(size);
-            mediaItem.setWidth(width);
-            mediaItem.setHeight(height);
             mediaItem.setMimeType(mimeType);
             mediaItem.setDateAdded(dateAdded);
             mediaItem.setDateModified(dateModified);
             mediaItem.setData(data);
             mediaItem.setRelativePath(relativePath);
-
+            if (duration != -1) {
+                mediaItem.setDuration(duration);
+            }
 
             allMedias.add(mediaItem);
 
@@ -145,15 +123,13 @@ public class ImageLoader extends AbsMediaLoader {
             mediaFolder.name = parentName;
             mediaFolder.path = parentPath;
 
-            int indexOf = mediaFolders.indexOf(mediaFolder);
-            if (indexOf == -1) {
+            if (mediaFolders.contains(mediaFolder)) {
+                mediaFolders.get(mediaFolders.indexOf(mediaFolder)).items.add(mediaItem);
+            } else {
                 ArrayList<MediaItem> images = new ArrayList<>();
                 images.add(mediaItem);
                 mediaFolder.items = images;
                 mediaFolders.add(mediaFolder);
-            } else {
-                // contain
-                mediaFolders.get(indexOf).items.add(mediaItem);
             }
         }
         // 防止没有图片报异常
@@ -163,24 +139,9 @@ public class ImageLoader extends AbsMediaLoader {
             allImagesFolder.name = context.getString(R.string.recently);
             allImagesFolder.path = "";
             allImagesFolder.items = allMedias;
-            mediaFolders.add(0, allImagesFolder);  //确保第一条是所有图片
+            mediaFolders.add(0, allImagesFolder);//确保第一条是所有图片
         }
         cursor.close();
         return mediaFolders;
     }
-
-
-    /**
-     * 判断是否为gif
-     * @param displayName
-     * @param mimeType
-     * @return
-     */
-    private boolean isGif(String displayName, String mimeType) {
-        if (!TextUtils.isEmpty(displayName) && displayName.toLowerCase().endsWith(".gif")) {
-            return true;
-        }
-        return false;
-    }
-
 }
