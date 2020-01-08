@@ -43,8 +43,6 @@ public class AudioLoader extends AbsMediaLoader {
         projections.add(MediaStore.Audio.Media.MIME_TYPE);
         projections.add(MediaStore.Audio.Media.DATE_ADDED);
         projections.add(MediaStore.Audio.Media.DATE_MODIFIED);
-        // audio
-        projections.add(MediaStore.Audio.Media.DURATION);
         /**
          * MediaStore.Video.Media.RELATIVE_PATH
          * 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
@@ -57,6 +55,7 @@ public class AudioLoader extends AbsMediaLoader {
         } else {
             projections.add(MediaStore.Audio.Media.DATA);
         }
+        addProjections(projections);
 
         Cursor cursor = contentResolver.query(externalContentUri, projections.toArray(new String[projections.size()]), selection, selectionArgs, order);
         if (cursor == null) {
@@ -101,8 +100,6 @@ public class AudioLoader extends AbsMediaLoader {
             long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
             long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
 
-            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
-
             //封装实体
             MediaItem mediaItem = new MediaItem(uri);
             mediaItem.setDisplayName(displayName);
@@ -112,9 +109,10 @@ public class AudioLoader extends AbsMediaLoader {
             mediaItem.setDateModified(dateModified);
             mediaItem.setData(data);
             mediaItem.setRelativePath(relativePath);
-            if (duration != -1) {
-                mediaItem.setDuration(duration);
-            }
+
+            // 专有参数
+            bindCursorData(cursor, mediaItem);
+
 
             allMedias.add(mediaItem);
 
@@ -163,6 +161,20 @@ public class AudioLoader extends AbsMediaLoader {
     @Override
     protected String[] getSelectionArgs() {
         return null;
+    }
+
+    @Override
+    protected void addProjections(ArrayList<String> projections) {
+        // audio
+        projections.add(MediaStore.Audio.Media.DURATION);
+    }
+
+    @Override
+    protected void bindCursorData(Cursor cursor, MediaItem mediaItem) {
+        long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+        if (duration != -1) {
+            mediaItem.setDuration(duration);
+        }
     }
 
 }

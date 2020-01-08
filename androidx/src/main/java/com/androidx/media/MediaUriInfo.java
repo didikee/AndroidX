@@ -9,7 +9,7 @@ import android.os.Parcelable;
  * create time: 2019-12-03 09:15
  * description: 
  */
-public class MediaUriInfo extends BaseUriInfo implements Parcelable{
+public class MediaUriInfo extends BaseUriInfo implements Parcelable {
     private String displayName;
     private String mimeType;
     private int width;
@@ -20,6 +20,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable{
     private long size;
     private long dateAdded;
     private long dateModified;
+    private long dateTaken;
 
     public MediaUriInfo() {
     }
@@ -110,6 +111,14 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable{
         }
     }
 
+    public long getDateTaken() {
+        return dateTaken;
+    }
+
+    public void setDateTaken(long dateTaken) {
+        this.dateTaken = dateTaken;
+    }
+
     @Override
     public String toString() {
         return "MediaUriInfo{" +
@@ -122,6 +131,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable{
                 ", size=" + size +
                 ", dateAdded=" + dateAdded +
                 ", dateModified=" + dateModified +
+                ", dateTaken=" + dateTaken +
                 '}';
     }
 
@@ -135,6 +145,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable{
         size = in.readLong();
         dateAdded = in.readLong();
         dateModified = in.readLong();
+        dateTaken = in.readLong();
     }
 
     public static final Creator<MediaUriInfo> CREATOR = new Creator<MediaUriInfo>() {
@@ -165,5 +176,6 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable{
         dest.writeLong(size);
         dest.writeLong(dateAdded);
         dest.writeLong(dateModified);
+        dest.writeLong(dateTaken);
     }
 }

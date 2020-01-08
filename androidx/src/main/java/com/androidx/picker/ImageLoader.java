@@ -48,14 +48,11 @@ public class ImageLoader extends AbsMediaLoader {
         String order = getOrder();
         String selection = getSelection();
         String[] selectionArgs = getSelectionArgs();
-
-        // projections
+        // common projections
         ArrayList<String> projections = new ArrayList<>();
         projections.add(MediaStore.MediaColumns._ID);
         projections.add(MediaStore.MediaColumns.DISPLAY_NAME);
         projections.add(MediaStore.MediaColumns.SIZE);
-        projections.add(MediaStore.MediaColumns.WIDTH);
-        projections.add(MediaStore.MediaColumns.HEIGHT);
         projections.add(MediaStore.MediaColumns.MIME_TYPE);
         projections.add(MediaStore.MediaColumns.DATE_ADDED);
         projections.add(MediaStore.MediaColumns.DATE_MODIFIED);
@@ -66,6 +63,8 @@ public class ImageLoader extends AbsMediaLoader {
             // 真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
             projections.add(MediaStore.MediaColumns.DATA);
         }
+        // 添加特定类型的参数
+        addProjections(projections);
 
         Cursor cursor = contentResolver.query(externalContentUri, projections.toArray(new String[projections.size()]), selection, selectionArgs, order);
         if (cursor == null) {
@@ -108,25 +107,22 @@ public class ImageLoader extends AbsMediaLoader {
                 parentName = parentInfo[0];
                 parentPath = parentInfo[1];
             }
-
+            MediaItem mediaItem = new MediaItem(uri);
+            // 这些是公用的参数
             long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE));
-            int width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
-            int height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
             long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
             long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
 
-            //封装实体
-            MediaItem mediaItem = new MediaItem(uri);
+            // 设置公共参数
             mediaItem.setDisplayName(displayName);
             mediaItem.setSize(size);
-            mediaItem.setWidth(width);
-            mediaItem.setHeight(height);
             mediaItem.setMimeType(mimeType);
             mediaItem.setDateAdded(dateAdded);
             mediaItem.setDateModified(dateModified);
             mediaItem.setData(data);
             mediaItem.setRelativePath(relativePath);
-
+            // 添加专有参数
+            bindCursorData(cursor, mediaItem);
 
             allMedias.add(mediaItem);
 
@@ -166,7 +162,7 @@ public class ImageLoader extends AbsMediaLoader {
      * @param mimeType
      * @return
      */
-    private boolean isGif(String displayName, String mimeType) {
+    protected boolean isGif(String displayName, String mimeType) {
         if (!TextUtils.isEmpty(displayName) && displayName.toLowerCase().endsWith(".gif")) {
             return true;
         }
@@ -204,7 +200,24 @@ public class ImageLoader extends AbsMediaLoader {
     }
 
     @Override
+    protected void addProjections(ArrayList<String> projections) {
+        projections.add(MediaStore.MediaColumns.WIDTH);
+        projections.add(MediaStore.MediaColumns.HEIGHT);
+    }
+
+    @Override
+    protected void bindCursorData(Cursor cursor, MediaItem mediaItem) {
+        // 这些和类型绑定的
+        int width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
+        int height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
+
+        //封装实体
+        mediaItem.setWidth(width);
+        mediaItem.setHeight(height);
+    }
+
+    @Override
     public ArrayList<MediaFolder> get(Context context, String folderPath) {
-        return load(context,IMAGE);
+        return load(context, IMAGE);
     }
 }

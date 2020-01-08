@@ -40,12 +40,9 @@ public class VideoLoader extends AbsMediaLoader {
         projections.add(MediaStore.Video.Media._ID);
         projections.add(MediaStore.Video.Media.DISPLAY_NAME);
         projections.add(MediaStore.Video.Media.SIZE);
-        projections.add(MediaStore.Video.Media.WIDTH);
-        projections.add(MediaStore.Video.Media.HEIGHT);
         projections.add(MediaStore.Video.Media.MIME_TYPE);
         projections.add(MediaStore.Video.Media.DATE_ADDED);
         projections.add(MediaStore.Video.Media.DATE_MODIFIED);
-        projections.add(MediaStore.Video.Media.DURATION);
         /**
          * MediaStore.Video.Media.RELATIVE_PATH
          * 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
@@ -58,6 +55,7 @@ public class VideoLoader extends AbsMediaLoader {
         } else {
             projections.add(MediaStore.Video.Media.DATA);
         }
+        addProjections(projections);
 
         Cursor cursor = contentResolver.query(externalContentUri, projections.toArray(new String[projections.size()]), selection, selectionArgs, order);
         if (cursor == null) {
@@ -97,10 +95,9 @@ public class VideoLoader extends AbsMediaLoader {
             }
 
             long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
-            int width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
-            int height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
+
             String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
-            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+
             long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
             long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
 
@@ -108,16 +105,15 @@ public class VideoLoader extends AbsMediaLoader {
             MediaItem mediaItem = new MediaItem(uri);
             mediaItem.setDisplayName(displayName);
             mediaItem.setSize(size);
-            mediaItem.setWidth(width);
-            mediaItem.setHeight(height);
             mediaItem.setMimeType(mimeType);
             mediaItem.setDateAdded(dateAdded);
             mediaItem.setDateModified(dateModified);
             mediaItem.setData(data);
             mediaItem.setRelativePath(relativePath);
-            if (duration != -1) {
-                mediaItem.setDuration(duration);
-            }
+
+            // 专有参数
+            bindCursorData(cursor, mediaItem);
+
 
             allMedias.add(mediaItem);
 
@@ -166,5 +162,25 @@ public class VideoLoader extends AbsMediaLoader {
     @Override
     protected String[] getSelectionArgs() {
         return new String[]{"video/mp4"};
+    }
+
+    @Override
+    protected void addProjections(ArrayList<String> projections) {
+        projections.add(MediaStore.Video.Media.WIDTH);
+        projections.add(MediaStore.Video.Media.HEIGHT);
+        projections.add(MediaStore.Video.Media.DURATION);
+    }
+
+    @Override
+    protected void bindCursorData(Cursor cursor, MediaItem mediaItem) {
+        int width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
+        int height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
+        long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+
+        mediaItem.setWidth(width);
+        mediaItem.setHeight(height);
+        if (duration != -1) {
+            mediaItem.setDuration(duration);
+        }
     }
 }

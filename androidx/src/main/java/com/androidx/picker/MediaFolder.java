@@ -21,6 +21,38 @@ public class MediaFolder implements Serializable, Parcelable {
     public MediaFolder() {
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public ArrayList<MediaItem> getItems() {
+        return items;
+    }
+
+    public void setItems(ArrayList<MediaItem> items) {
+        this.items = items;
+    }
+
+    public boolean isCheck() {
+        return check;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
+    }
+
     public MediaItem getCover() {
         if (items != null && items.size() > 0) {
             return items.get(0);
@@ -28,6 +60,9 @@ public class MediaFolder implements Serializable, Parcelable {
         return null;
     }
 
+    public int getSize() {
+        return items == null ? 0 : items.size();
+    }
 
     /** 只要文件夹的路径和名字相同，就认为是相同的文件夹 */
     @Override
