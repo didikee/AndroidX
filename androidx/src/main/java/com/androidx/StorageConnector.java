@@ -116,6 +116,7 @@ public class StorageConnector {
         }
         // 3. create temp save file for c program
         internalTempSaveFile = createOutputFile();
+        LogUtils.d("StorageConnector prepare input: " + inputUriFile.getAbsolutePath() + " output: " + internalTempSaveFile.getAbsolutePath());
         return true;
     }
 
@@ -158,11 +159,6 @@ public class StorageConnector {
 
     public Uri save() {
         return saveFile(internalTempSaveFile);
-    }
-
-    @Deprecated
-    public Uri save(File inputFile) {
-        return saveFile(inputFile);
     }
 
     public Uri saveFile(File inputFile) {
