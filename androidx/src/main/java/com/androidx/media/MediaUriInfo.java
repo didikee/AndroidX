@@ -12,8 +12,6 @@ import android.os.Parcelable;
 public class MediaUriInfo extends BaseUriInfo implements Parcelable {
     private String displayName;
     private String mimeType;
-    private int width;
-    private int height;
     @Deprecated
     private String data;
     private String relativePath;
@@ -21,6 +19,12 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
     private long dateAdded;
     private long dateModified;
     private long dateTaken;
+    // image & video
+    private int width;
+    private int height;
+    private int rotate;
+    // video & audio
+    private long duration;
 
     public MediaUriInfo() {
     }
@@ -119,19 +123,37 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.dateTaken = dateTaken;
     }
 
+    public int getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(int rotate) {
+        this.rotate = rotate;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
     @Override
     public String toString() {
         return "MediaUriInfo{" +
                 "displayName='" + displayName + '\'' +
                 ", mimeType='" + mimeType + '\'' +
-                ", width=" + width +
-                ", height=" + height +
                 ", data='" + data + '\'' +
                 ", relativePath='" + relativePath + '\'' +
                 ", size=" + size +
                 ", dateAdded=" + dateAdded +
                 ", dateModified=" + dateModified +
                 ", dateTaken=" + dateTaken +
+                ", width=" + width +
+                ", height=" + height +
+                ", rotate=" + rotate +
+                ", duration=" + duration +
                 '}';
     }
 
@@ -146,6 +168,8 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         dateAdded = in.readLong();
         dateModified = in.readLong();
         dateTaken = in.readLong();
+        duration = in.readLong();
+        rotate = in.readInt();
     }
 
     public static final Creator<MediaUriInfo> CREATOR = new Creator<MediaUriInfo>() {
@@ -177,5 +201,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         dest.writeLong(dateAdded);
         dest.writeLong(dateModified);
         dest.writeLong(dateTaken);
+        dest.writeLong(duration);
+        dest.writeInt(rotate);
     }
 }
