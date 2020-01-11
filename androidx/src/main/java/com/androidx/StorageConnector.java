@@ -170,13 +170,16 @@ public class StorageConnector {
             Log.e(TAG, "c program maybe work failed,temp save is not exists");
             return null;
         }
+        String fileName = inputFile.getName();
+        mimeType = MimeType.getMimeTypeFromFilename(fileName);
         // 1. 获取 contentValues
-        ContentValues contentValues = getContentValues(inputFile, folderPath, "", "");
+        ContentValues contentValues = getContentValues(inputFile, folderPath, fileName, mimeType);
         LogUtils.d("folderPath: " + folderPath + " mimeType: " + mimeType);
         LogUtils.d("StorageConnector saveFile() contentValues: " + contentValues.toString());
         ContentResolver contentResolver = context.getContentResolver();
         // 2. 获取对应媒体的插入 uri
         Uri mediaLocation = getMediaLocation(mimeType);
+        LogUtils.d("StorageConnector getMediaLocation() uri: " + mediaLocation.toString());
         // 3. 插入数据，如果成功继续，如果失败就直接返回
         Uri uri = contentResolver.insert(mediaLocation, contentValues);
         if (uri == null) {
