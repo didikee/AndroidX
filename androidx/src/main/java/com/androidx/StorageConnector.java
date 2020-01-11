@@ -157,30 +157,28 @@ public class StorageConnector {
     }
 
     public Uri save() {
-        return save(internalTempSaveFile);
+        return saveFile(internalTempSaveFile);
     }
 
+    @Deprecated
     public Uri save(File inputFile) {
+        return saveFile(inputFile);
+    }
+
+    public Uri saveFile(File inputFile) {
         if (inputFile == null || !inputFile.exists()) {
             Log.e(TAG, "c program maybe work failed,temp save is not exists");
             return null;
         }
-        String fileName = inputFile.getName();
-        if (TextUtils.isEmpty(mimeType)) {
-            mimeType = getMimeType(fileName);
-        }
-
-        ContentValues values = StorageUriUtils.makeMediaValues(
-                folderPath,
-                fileName,
-                mimeType,
-                0, 0,
-                inputFile.length()
-        );
+        // 1. 获取 contentValues
+        ContentValues contentValues = getContentValues(inputFile, folderPath, "", "");
         LogUtils.d("folderPath: " + folderPath + " mimeType: " + mimeType);
+        LogUtils.d("StorageConnector saveFile() contentValues: " + contentValues.toString());
         ContentResolver contentResolver = context.getContentResolver();
+        // 2. 获取对应媒体的插入 uri
         Uri mediaLocation = getMediaLocation(mimeType);
-        Uri uri = contentResolver.insert(mediaLocation, values);
+        // 3. 插入数据，如果成功继续，如果失败就直接返回
+        Uri uri = contentResolver.insert(mediaLocation, contentValues);
         if (uri == null) {
             Log.e(TAG, "save StorageUriUtils.makeImageUri failed");
             return null;
@@ -199,8 +197,8 @@ public class StorageConnector {
                 outputStream.write(buffer, 0, bytesRead);
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                values.put(MediaStore.MediaColumns.IS_PENDING, false);
-                contentResolver.update(uri, values, null, null);
+                contentValues.put(MediaStore.MediaColumns.IS_PENDING, false);
+                contentResolver.update(uri, contentValues, null, null);
             }
             return uri;
         } catch (Exception e) {
@@ -223,6 +221,10 @@ public class StorageConnector {
             }
         }
         return null;
+    }
+
+    public ContentValues getContentValues(File file, String folderPath, String filename, String mimeType) {
+        return StorageUriUtils.getContentValues(file, folderPath, filename, mimeType);
     }
 
     protected boolean copyUri2File(Context context, Uri uri, File outputFile) {
@@ -280,52 +282,35 @@ public class StorageConnector {
     }
 
     protected String getMimeType(String filename) {
-        String mimeType = MimeType.UNKNOWN;
-        if (!TextUtils.isEmpty(filename)) {
-            try {
-                String extension = filename.substring(filename.lastIndexOf(".") + 1);
-                if ("gif".equalsIgnoreCase(extension)) {
-                    mimeType = MimeType.GIF;
-                } else if ("mp4".equalsIgnoreCase(extension)) {
-                    mimeType = MimeType.MP4;
-                } else if ("png".equalsIgnoreCase(extension)) {
-                    mimeType = MimeType.PNG;
-                } else if ("jpeg".equalsIgnoreCase(extension)) {
-                    mimeType = MimeType.JPEG;
-                }else if ("mp3".equalsIgnoreCase(extension)){
-                    mimeType = MimeType.MP3;
-                }else if ("aac".equalsIgnoreCase(extension)){
-                    mimeType = MimeType.AAC;
-                }else if ("wav".equalsIgnoreCase(extension)){
-                    mimeType = MimeType.WAV;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        String extension = "";
+        try {
+            extension = filename.substring(filename.lastIndexOf(".") + 1);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return mimeType;
+        if (TextUtils.isEmpty(extension)) {
+            return MimeType.UNKNOWN;
+        } else {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                // aac要单独判断，因为4.4没有aac格式
+                if ("aac".equalsIgnoreCase(extension)) {
+                    return MimeType.AAC;
+                }
+            }
+            return MimeType.getMimeTypeFromExtension(extension.toLowerCase());
+        }
     }
 
     protected Uri getMediaLocation(String mimeType) {
-        Uri location;
-        switch (mimeType) {
-            case MimeType.GIF:
-            case MimeType.JPEG:
-            case MimeType.PNG:
-                location = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                break;
-            case MimeType.MP4:
-                location = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                break;
-            case MimeType.MP3:
-            case MimeType.AAC:
-            case MimeType.WAV:
-                location = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                break;
-            default:
-                location = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
-                break;
+        if (MimeType.isVideo(mimeType)) {
+            return MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
         }
-        return location;
+        if (MimeType.isImage(mimeType)) {
+            return MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+        if (MimeType.isAudio(mimeType)) {
+            return MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        }
+        return MediaStore.Downloads.EXTERNAL_CONTENT_URI;
     }
 }
