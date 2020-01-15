@@ -150,10 +150,10 @@ public final class StorageUriUtils {
             try {
                 MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(file.getAbsolutePath());
-                duration = Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-                width = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-                height = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
-                rotate = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+                duration = parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION), 0);
+                width = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH), 0);
+                height = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT), 0);
+                rotate = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION), 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -177,9 +177,9 @@ public final class StorageUriUtils {
             try {
                 MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(file.getAbsolutePath());
-                width = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_WIDTH));
-                height = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_HEIGHT));
-                rotate = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_ROTATION));
+                width = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_WIDTH), 0);
+                height = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_HEIGHT), 0);
+                rotate = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_ROTATION), 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -188,4 +188,21 @@ public final class StorageUriUtils {
         return makeBaseValues(folderPath, filename, mimeType, file.length());
     }
 
+    private static int parseInt(String num, int defaultValue) {
+        try {
+            return Integer.parseInt(num);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return defaultValue;
+    }
+
+    private static long parseLong(String num, long defaultValue) {
+        try {
+            return Long.parseLong(num);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return defaultValue;
+    }
 }

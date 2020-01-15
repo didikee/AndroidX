@@ -167,7 +167,10 @@ public class StorageConnector {
             return null;
         }
         String fileName = inputFile.getName();
-        mimeType = MimeType.getMimeTypeFromFilename(fileName);
+        // 默认是空的，可以设置mime type
+        if (TextUtils.isEmpty(mimeType)) {
+            mimeType = MimeType.getMimeTypeFromFilename(fileName);
+        }
         // 1. 获取 contentValues
         ContentValues contentValues = getContentValues(inputFile, folderPath, fileName, mimeType);
         LogUtils.d("folderPath: " + folderPath + " mimeType: " + mimeType);
