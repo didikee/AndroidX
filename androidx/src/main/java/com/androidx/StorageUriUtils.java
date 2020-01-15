@@ -84,7 +84,7 @@ public final class StorageUriUtils {
         values.put(MediaStore.MediaColumns.TITLE, filename);
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
-        values.put(MediaStore.MediaColumns.DATE_TAKEN, System.currentTimeMillis());
+        values.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
         if (width > 0 && height > 0) {
             values.put(MediaStore.MediaColumns.WIDTH, width);
@@ -117,7 +117,7 @@ public final class StorageUriUtils {
         values.put(MediaStore.MediaColumns.TITLE, filename);
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
-        values.put(MediaStore.MediaColumns.DATE_TAKEN, System.currentTimeMillis());
+        values.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
         if (fileLength > 0) {
             values.put(MediaStore.MediaColumns.SIZE, fileLength);
@@ -147,8 +147,9 @@ public final class StorageUriUtils {
             int width = 0;
             int height = 0;
             int rotate = 0;
+            MediaMetadataRetriever retriever = null;
             try {
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(file.getAbsolutePath());
                 duration = parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION), 0);
                 width = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH), 0);
@@ -156,17 +157,26 @@ public final class StorageUriUtils {
                 rotate = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION), 0);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (retriever != null) {
+                    retriever.close();
+                }
             }
             return makeVideoValues(folderPath, filename, mimeType, width, height, duration, rotate, file.length());
         }
         if (MimeType.isAudio(mimeType)) {
             long duration = 0;
+            MediaMetadataRetriever retriever = null;
             try {
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(file.getAbsolutePath());
                 duration = Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (retriever != null) {
+                    retriever.close();
+                }
             }
             return makeAudioValues(folderPath, filename, mimeType, duration, file.length());
         }
@@ -174,14 +184,19 @@ public final class StorageUriUtils {
             int width = 0;
             int height = 0;
             int rotate = 0;
+            MediaMetadataRetriever retriever = null;
             try {
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(file.getAbsolutePath());
                 width = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_WIDTH), 0);
                 height = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_HEIGHT), 0);
                 rotate = parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_IMAGE_ROTATION), 0);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (retriever != null) {
+                    retriever.close();
+                }
             }
             return makeImageValues(folderPath, filename, mimeType, width, height, rotate, file.length());
         }

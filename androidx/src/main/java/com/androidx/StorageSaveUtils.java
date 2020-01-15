@@ -280,7 +280,7 @@ public final class StorageSaveUtils {
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mediaInfo.getMimeType());
         contentValues.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
-        contentValues.put(MediaStore.MediaColumns.DATE_TAKEN, System.currentTimeMillis());
+        contentValues.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
         int width = mediaInfo.getWidth();
         int height = mediaInfo.getHeight();
         if (width * height > 0) {

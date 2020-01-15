@@ -22,7 +22,7 @@ import java.util.ArrayList;
  * description: 
  */
 public final class UriUtils {
-    private static final String DATE_TAKEN = "datetaken";
+    public static final String DATE_TAKEN = "datetaken";
 
     @Deprecated
     public static MediaUriInfo getMediaInfo(ContentResolver contentResolver, Uri uri) {
@@ -92,29 +92,65 @@ public final class UriUtils {
             return null;
         }
         if (TextUtils.isEmpty(mimeType)) {
-            mimeType = getMimeType(context, uri);
+            // mimeType = getMimeType(context, uri);
+            mimeType = getMimeType(context.getContentResolver(), uri);
+            LogUtils.e("getMediaInfo mimeType: " + mimeType);
         }
-        if (MimeType.isImage(mimeType)) {
-            return getImageInfo(context.getContentResolver(), uri);
+        if (TextUtils.isEmpty(mimeType)) {
+            return null;
+        } else {
+            if (MimeType.isImage(mimeType)) {
+                return getImageInfo(context.getContentResolver(), uri);
+            }
+            if (MimeType.isVideo(mimeType)) {
+                return getVideoInfo(context.getContentResolver(), uri);
+            }
+            if (MimeType.isAudio(mimeType)) {
+                return getAudioInfo(context.getContentResolver(), uri);
+            }
+            // 当什么都不是的时候去获取基础信息
+            return getBaseInfo(context.getContentResolver(), uri);
         }
-        if (MimeType.isVideo(mimeType)) {
-            return getVideoInfo(context.getContentResolver(), uri);
-        }
-        if (MimeType.isAudio(mimeType)) {
-            return getAudioInfo(context.getContentResolver(), uri);
-        }
-        // 当什么都不是的时候去获取基础信息
-        return getBaseInfo(context.getContentResolver(), uri);
     }
 
     private static String getMimeType(Context context, Uri uri) {
         String mimeType = "";
+        MediaMetadataRetriever metadataRetriever = null;
         try {
-            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+            metadataRetriever = new MediaMetadataRetriever();
             metadataRetriever.setDataSource(context, uri);
             mimeType = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (metadataRetriever != null) {
+                metadataRetriever.close();
+            }
+        }
+        return mimeType;
+    }
+
+    private static String getMimeType(ContentResolver contentResolver, Uri uri) {
+        String mimeType = "";
+        String[] projections = new String[]{
+                MediaStore.MediaColumns.MIME_TYPE,
+        };
+        Cursor cursor = null;
+        try {
+            cursor = contentResolver.query(uri, projections, null, null, null);
+            if (cursor == null) {
+                LogUtils.e("getMimeType get a empty cursor: " + uri.toString());
+            } else {
+                if (cursor.moveToFirst()) {
+                    mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return mimeType;
     }
@@ -124,19 +160,19 @@ public final class UriUtils {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                projections.add(MediaStore.MediaColumns.DATE_TAKEN);
+                projections.add(UriUtils.DATE_TAKEN);
             } else {
                 projections.add(MediaStore.Images.Media.DATE_TAKEN);
             }
             projections.add(MediaStore.Images.Media.WIDTH);
             projections.add(MediaStore.Images.Media.HEIGHT);
             projections.add(MediaStore.Images.Media.ORIENTATION);
-
-            Cursor cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
-            if (cursor == null) {
-                LogUtils.e("getImageInfo get a empty cursor: " + uri.toString());
-            } else {
-                try {
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.e("getImageInfo get a empty cursor: " + uri.toString());
+                } else {
                     if (cursor.moveToFirst()) {
                         MediaUriInfo mediaUriInfo = new MediaUriInfo();
                         mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
@@ -153,7 +189,7 @@ public final class UriUtils {
 
                         // custom
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)));
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
                         } else {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)));
                         }
@@ -162,9 +198,12 @@ public final class UriUtils {
                         mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION)));
                         return mediaUriInfo;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
                     cursor.close();
                 }
             }
@@ -176,7 +215,7 @@ public final class UriUtils {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                projections.add(MediaStore.MediaColumns.DATE_TAKEN);
+                projections.add(UriUtils.DATE_TAKEN);
             } else {
                 projections.add(MediaStore.Video.Media.DATE_TAKEN);
             }
@@ -184,12 +223,13 @@ public final class UriUtils {
             projections.add(MediaStore.Video.Media.WIDTH);
             projections.add(MediaStore.Video.Media.HEIGHT);
             projections.add(MediaStore.Video.Media.ORIENTATION);
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.e("getVideoInfo get a empty cursor: " + uri.toString());
+                } else {
 
-            Cursor cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
-            if (cursor == null) {
-                LogUtils.e("getVideoInfo get a empty cursor: " + uri.toString());
-            } else {
-                try {
                     if (cursor.moveToFirst()) {
                         MediaUriInfo mediaUriInfo = new MediaUriInfo();
                         mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
@@ -206,7 +246,7 @@ public final class UriUtils {
 
                         // custom
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)));
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
                         } else {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_TAKEN)));
                         }
@@ -216,9 +256,11 @@ public final class UriUtils {
                         mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
                         return mediaUriInfo;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
                     cursor.close();
                 }
             }
@@ -230,17 +272,18 @@ public final class UriUtils {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                projections.add(MediaStore.MediaColumns.DATE_TAKEN);
+                projections.add(UriUtils.DATE_TAKEN);
             } else {
                 projections.add(MediaStore.Audio.Media.DATE_TAKEN);
             }
             projections.add(MediaStore.Audio.Media.DURATION);
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.w("getAudioInfo get a empty cursor: " + uri.toString());
+                } else {
 
-            Cursor cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
-            if (cursor == null) {
-                LogUtils.w("getAudioInfo get a empty cursor: " + uri.toString());
-            } else {
-                try {
                     if (cursor.moveToFirst()) {
                         MediaUriInfo mediaUriInfo = new MediaUriInfo();
                         mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
@@ -257,7 +300,7 @@ public final class UriUtils {
 
                         // custom
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)));
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
                         } else {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_TAKEN)));
                         }
@@ -265,9 +308,12 @@ public final class UriUtils {
 
                         return mediaUriInfo;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
                     cursor.close();
                 }
             }
@@ -279,16 +325,17 @@ public final class UriUtils {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                projections.add(MediaStore.MediaColumns.DATE_TAKEN);
+                projections.add(UriUtils.DATE_TAKEN);
             } else {
                 projections.add(DATE_TAKEN);
             }
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.e("getBaseInfo get a empty cursor: " + uri.toString());
+                } else {
 
-            Cursor cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
-            if (cursor == null) {
-                LogUtils.e("getBaseInfo get a empty cursor: " + uri.toString());
-            } else {
-                try {
                     if (cursor.moveToFirst()) {
                         MediaUriInfo mediaUriInfo = new MediaUriInfo();
                         mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
@@ -305,15 +352,18 @@ public final class UriUtils {
 
                         // custom
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)));
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
                         } else {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(DATE_TAKEN)));
                         }
                         return mediaUriInfo;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
                     cursor.close();
                 }
             }
