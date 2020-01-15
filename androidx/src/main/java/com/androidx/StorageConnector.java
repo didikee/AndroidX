@@ -116,7 +116,10 @@ public class StorageConnector {
         }
         // 3. create temp save file for c program
         internalTempSaveFile = createOutputFile();
-        LogUtils.d("StorageConnector prepare input: " + inputUriFile.getAbsolutePath() + " output: " + internalTempSaveFile.getAbsolutePath());
+        if (inputUriFile != null) {
+            LogUtils.d("StorageConnector prepare input: " + inputUriFile.getAbsolutePath());
+        }
+        LogUtils.d("StorageConnector prepare output: " + internalTempSaveFile.getAbsolutePath());
         return true;
     }
 
