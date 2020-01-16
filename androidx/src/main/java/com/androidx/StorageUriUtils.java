@@ -159,7 +159,7 @@ public final class StorageUriUtils {
                 e.printStackTrace();
             } finally {
                 if (retriever != null) {
-                    retriever.close();
+                    retriever.release();
                 }
             }
             return makeVideoValues(folderPath, filename, mimeType, width, height, duration, rotate, file.length());
@@ -175,7 +175,7 @@ public final class StorageUriUtils {
                 e.printStackTrace();
             } finally {
                 if (retriever != null) {
-                    retriever.close();
+                    retriever.release();
                 }
             }
             return makeAudioValues(folderPath, filename, mimeType, duration, file.length());
@@ -195,7 +195,7 @@ public final class StorageUriUtils {
                 e.printStackTrace();
             } finally {
                 if (retriever != null) {
-                    retriever.close();
+                    retriever.release();
                 }
             }
             return makeImageValues(folderPath, filename, mimeType, width, height, rotate, file.length());

@@ -124,7 +124,7 @@ public final class UriUtils {
             e.printStackTrace();
         } finally {
             if (metadataRetriever != null) {
-                metadataRetriever.close();
+                metadataRetriever.release();
             }
         }
         return mimeType;
@@ -214,15 +214,17 @@ public final class UriUtils {
     public static MediaUriInfo getVideoInfo(ContentResolver contentResolver, Uri uri) {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                projections.add(UriUtils.DATE_TAKEN);
-            } else {
-                projections.add(MediaStore.Video.Media.DATE_TAKEN);
-            }
+
             projections.add(MediaStore.Video.Media.DURATION);
             projections.add(MediaStore.Video.Media.WIDTH);
             projections.add(MediaStore.Video.Media.HEIGHT);
-            projections.add(MediaStore.Video.Media.ORIENTATION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projections.add(UriUtils.DATE_TAKEN);
+                //在sdk >= 29 后才加入了视频的方向api,所以先不取这个字段
+                // projections.add(MediaStore.Video.Media.ORIENTATION);
+            } else {
+                projections.add(MediaStore.Video.Media.DATE_TAKEN);
+            }
             Cursor cursor = null;
             try {
                 cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
@@ -253,7 +255,7 @@ public final class UriUtils {
                         mediaUriInfo.setDuration(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
                         mediaUriInfo.setWidth(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)));
                         mediaUriInfo.setHeight(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)));
-                        mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
+//                        mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
                         return mediaUriInfo;
                     }
                 }
