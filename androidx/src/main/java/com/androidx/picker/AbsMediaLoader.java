@@ -14,7 +14,6 @@ import java.util.ArrayList;
  * description: 
  */
 public abstract class AbsMediaLoader {
-    public static final String DATE_TAKEN = "datetaken";
 
     public abstract ArrayList<MediaFolder> get(Context context, String folderPath);
 
