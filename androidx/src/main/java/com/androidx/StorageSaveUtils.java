@@ -2,8 +2,8 @@ package com.androidx;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -39,6 +39,7 @@ public final class StorageSaveUtils {
      * @param mimeType
      * @return
      */
+    @Deprecated
     public static Uri saveBitmap(ContentResolver contentResolver, Bitmap bitmap, String folderPath, String fileName, String mimeType) {
         if (contentResolver == null || bitmap == null) {
             LogUtils.e("StorageSaveUtils saveBitmap() contentResolver or bitmap is null.");
@@ -125,26 +126,12 @@ public final class StorageSaveUtils {
             LogUtils.e("StorageSaveUtils saveMediaFile() folderPath is empty.");
             return null;
         }
-        String mimeType = "";
 
+        String mimeType = "";
         String fileName = mediaFile.getName();
         try {
             String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if ("png".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.PNG;
-            } else if ("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.JPEG;
-            } else if ("gif".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.GIF;
-            } else if ("mp4".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.MP4;
-            } else if ("mp3".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.MP3;
-            } else if ("aac".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.AAC;
-            } else if ("wav".equalsIgnoreCase(extension)) {
-                mimeType = MimeType.WAV;
-            }
+            mimeType = MimeType.getMimeTypeFromExtension(extension);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,30 +140,20 @@ public final class StorageSaveUtils {
             return null;
         }
 
-        ContentValues contentValues;
+        ContentValues contentValues = StorageUriUtils.getContentValues(mediaFile, folderPath, fileName, mimeType);
+        if (contentValues == null) {
+            LogUtils.e("StorageSaveUtils saveMediaFile() ContentValues is null.");
+            return null;
+        }
+
         Uri destUri;
-        if (mimeType.startsWith("image")) {
-            int width = 0;
-            int height = 0;
-            try {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(mediaFile.getAbsolutePath(), options);
-                width = options.outWidth;
-                height = options.outHeight;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            contentValues = StorageUriUtils.makeImageValues(folderPath, fileName, mimeType, width, height, 0);
+        if (MimeType.isImage(mimeType)) {
             destUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-        } else if (mimeType.startsWith("video")) {
-            contentValues = StorageUriUtils.makeVideoValues(folderPath, fileName, 0);
+        } else if (MimeType.isVideo(mimeType)) {
             destUri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues);
-        } else if (mimeType.startsWith("audio")) {
-            contentValues = StorageUriUtils.makeMediaValues(folderPath, fileName, mimeType, 0, 0, 0);
+        } else if (MimeType.isAudio(mimeType)) {
             destUri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
         } else {
-            contentValues = StorageUriUtils.makeMediaValues(folderPath, fileName, mimeType, 0, 0, 0);
             destUri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
         }
         OutputStream outputStream = null;
@@ -271,11 +248,22 @@ public final class StorageSaveUtils {
         return delete != -1;
     }
 
-    public static Uri copy(ContentResolver contentResolver, Uri src, String filename, String data, String relativePath) {
-        MediaUriInfo mediaInfo = UriUtils.getMediaInfo(contentResolver, src);
+    /**
+     * 这个方法稚嫩gcopy图片，其他的就不行了
+     * @param context
+     * @param src
+     * @param filename
+     * @param data
+     * @param relativePath
+     * @return
+     */
+    @Deprecated
+    public static Uri copy(Context context, Uri src, String filename, String data, String relativePath) {
+        MediaUriInfo mediaInfo = UriUtils.getMediaInfo(context, src);
         if (mediaInfo == null) {
             return null;
         }
+        ContentResolver contentResolver = context.getContentResolver();
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mediaInfo.getMimeType());
@@ -291,7 +279,6 @@ public final class StorageSaveUtils {
         if (size > 0) {
             contentValues.put(MediaStore.MediaColumns.SIZE, size);
         }
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
