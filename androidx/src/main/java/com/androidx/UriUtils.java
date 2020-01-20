@@ -276,7 +276,8 @@ public final class UriUtils {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 projections.add(UriUtils.DATE_TAKEN);
             } else {
-                projections.add(MediaStore.Audio.Media.DATE_TAKEN);
+                // android 10 开始才有
+                // do nothing
             }
             projections.add(MediaStore.Audio.Media.DURATION);
             Cursor cursor = null;
@@ -304,10 +305,9 @@ public final class UriUtils {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
                         } else {
-                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_TAKEN)));
+                            mediaUriInfo.setDateTaken(0/*低于android10的没有这个字段*/);
                         }
                         mediaUriInfo.setDuration(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)));
-
                         return mediaUriInfo;
                     }
 
