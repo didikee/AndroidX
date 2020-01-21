@@ -17,16 +17,6 @@ import java.io.File;
  */
 public final class StorageUriUtils {
 
-//    @Deprecated
-//    public static ContentValues makeImageValues(String folderPath, String filename, String mimeType, int width, int height, long fileLength) {
-//        return makeMediaValues(folderPath, filename, mimeType, width, height, fileLength);
-//    }
-
-//    @Deprecated
-//    public static ContentValues makeVideoValues(String folderPath, String filename, long fileLength) {
-//        return makeMediaValues(folderPath, filename, "video/mp4", 0, 0, fileLength);
-//    }
-
     /**
      * 获取音频的参数
      * @return
@@ -39,6 +29,13 @@ public final class StorageUriUtils {
 
 
     /**
+     * 支持图片和视频
+     * @param folderPath android(>=10): Environment.DIRECTORY_PICTURES + separator + filename
+     *             android(<10):  File pictureDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+     *                            if (!pictureDir.exists()) {
+     *                                 pictureDir.mkdirs();
+     *                            }
+     *                            String absolutePath = pictureDir.getAbsolutePath() + separator + gifFile.getName();
      * 获取图片的参数
      * @return
      */
@@ -68,43 +65,6 @@ public final class StorageUriUtils {
         values.put(MediaStore.MediaColumns.DURATION, duration);
         return values;
     }
-
-//    /**
-//     * 支持图片和视频
-//     * @param folderPath android(>=10): Environment.DIRECTORY_PICTURES + separator + filename
-//     *             android(<10):  File pictureDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-//     *                            if (!pictureDir.exists()) {
-//     *                                 pictureDir.mkdirs();
-//     *                            }
-//     *                            String absolutePath = pictureDir.getAbsolutePath() + separator + gifFile.getName();
-//     * @param filename
-//     * @param mimeType
-//     * @param fileLength
-//     */
-//    @Deprecated
-//    public static ContentValues makeMediaValues(String folderPath, String filename, String mimeType, int width, int height, long fileLength) {
-//        ContentValues values = new ContentValues();
-//        values.put(MediaStore.MediaColumns.TITLE, filename);
-//        values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
-//        values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
-//        values.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
-//        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
-//        if (width > 0 && height > 0) {
-//            values.put(MediaStore.MediaColumns.WIDTH, width);
-//            values.put(MediaStore.MediaColumns.HEIGHT, height);
-//        }
-//        if (fileLength > 0) {
-//            values.put(MediaStore.MediaColumns.SIZE, fileLength);
-//        }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            values.put(MediaStore.Images.Media.RELATIVE_PATH, folderPath);
-//            values.put(MediaStore.MediaColumns.IS_PENDING, true);
-//        } else {
-//            String data = StorageSaveUtils.getDataPath(folderPath, filename);
-//            values.put(MediaStore.MediaColumns.DATA, data);
-//        }
-//        return values;
-//    }
 
 
     /**
