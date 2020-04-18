@@ -3,6 +3,7 @@ package com.androidx.media;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 /**
  * user author: didikee
@@ -109,6 +110,9 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
 
     public String getPath() {
         if (Build.VERSION.SDK_INT >= 29) {
+            if (!TextUtils.isEmpty(data)) {
+                return getData();
+            }
             return getRelativePath();
         } else {
             return getData();

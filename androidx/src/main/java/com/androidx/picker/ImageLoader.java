@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
@@ -57,8 +58,13 @@ public class ImageLoader extends AbsMediaLoader {
         projections.add(MediaStore.MediaColumns.DATE_ADDED);
         projections.add(MediaStore.MediaColumns.DATE_MODIFIED);
         if (Build.VERSION.SDK_INT >= 29/*android 10*/) {
-            // 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
-            projections.add(MediaStore.MediaColumns.RELATIVE_PATH);
+            boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+            if (externalStorageLegacy) {
+                projections.add(MediaStore.MediaColumns.DATA);
+            } else {
+                // 相对路径   /storage/0000-0000/DCIM/Vacation/IMG1024.JPG} would have a path of {@code DCIM/Vacation/}.
+                projections.add(MediaStore.MediaColumns.RELATIVE_PATH);
+            }
         } else {
             // 真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
             projections.add(MediaStore.MediaColumns.DATA);
@@ -81,15 +87,18 @@ public class ImageLoader extends AbsMediaLoader {
 
             // 现在全部改为uri来实现
             Uri uri = ContentUris.withAppendedId(externalContentUri, Long.parseLong(id));
-
             if (mType == IMAGE_WITHOUT_GIF && isGif(displayName, mimeType)) {
                 continue;
             }
-
             String data = "";
             String relativePath = "";
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                relativePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH));
+                boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+                if (externalStorageLegacy) {
+                    data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+                } else {
+                    relativePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH));
+                }
             } else {
                 data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
             }
