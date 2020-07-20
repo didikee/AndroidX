@@ -161,7 +161,8 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
                 '}';
     }
 
-    protected MediaUriInfo(Parcel in) {
+    public MediaUriInfo(Parcel in) {
+        super(in);
         displayName = in.readString();
         mimeType = in.readString();
         width = in.readInt();
@@ -195,6 +196,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
         dest.writeString(displayName);
         dest.writeString(mimeType);
         dest.writeInt(width);
