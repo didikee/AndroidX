@@ -9,7 +9,9 @@ import com.androidx.media.MediaUriInfo;
 /**
  * user author: didikee
  * create time: 2019-12-03 09:58
- * description: 
+ * description:
+ * Parcelable 的继承问题:
+ * https://stackoverflow.com/questions/17725821/how-to-extend-android-class-which-implements-parcelable-interface
  */
 public class MediaItem extends MediaUriInfo implements Parcelable {
     private Uri uri;

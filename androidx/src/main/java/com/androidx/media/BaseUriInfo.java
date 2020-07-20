@@ -9,6 +9,7 @@ import android.os.Parcelable;
  * description: 
  */
 public class BaseUriInfo implements Parcelable {
+
     private long id;
 
     public long getId() {
