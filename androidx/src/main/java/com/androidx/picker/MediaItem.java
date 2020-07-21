@@ -15,7 +15,6 @@ import com.androidx.media.MediaUriInfo;
  */
 public class MediaItem extends MediaUriInfo implements Parcelable {
     private Uri uri;
-    private long duration;
 
     public MediaItem(Uri uri) {
         this.uri = uri;
@@ -29,18 +28,9 @@ public class MediaItem extends MediaUriInfo implements Parcelable {
         this.uri = uri;
     }
 
-    public long getDuration() {
-        return duration;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
-    }
-
     public MediaItem(Parcel in) {
         super(in);
         uri = in.readParcelable(Uri.class.getClassLoader());
-        duration = in.readLong();
     }
 
     public static final Creator<MediaItem> CREATOR = new Creator<MediaItem>() {
@@ -64,6 +54,5 @@ public class MediaItem extends MediaUriInfo implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
         dest.writeParcelable(uri, flags);
-        dest.writeLong(duration);
     }
 }
