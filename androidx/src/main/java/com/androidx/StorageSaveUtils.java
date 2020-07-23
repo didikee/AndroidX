@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -332,6 +333,211 @@ public final class StorageSaveUtils {
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 复制uri 到另一个位置
+     * @param context
+     * @param srcUri
+     * @param folderPath
+     * @return
+     */
+    public static Uri imageCopy(Context context, Uri srcUri, String folderPath) {
+        if (context == null || srcUri == null) {
+            return null;
+        }
+        ContentResolver contentResolver = context.getContentResolver();
+        MediaUriInfo imageInfo = UriUtils.getImageInfo(contentResolver, srcUri);
+        if (imageInfo == null) {
+            return null;
+        }
+        String displayName = imageInfo.getDisplayName();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, imageInfo.getMimeType());
+        contentValues.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
+        contentValues.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
+        int width = imageInfo.getWidth();
+        int height = imageInfo.getHeight();
+        if (width * height > 0) {
+            contentValues.put(MediaStore.MediaColumns.WIDTH, width);
+            contentValues.put(MediaStore.MediaColumns.HEIGHT, height);
+        }
+        long size = imageInfo.getSize();
+        if (size > 0) {
+            contentValues.put(MediaStore.MediaColumns.SIZE, size);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, folderPath);
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, true);
+            LogUtils.d("imageCopy folderPath: " + folderPath);
+        } else {
+            String dataPath = getDataPath(folderPath, displayName);
+            contentValues.put(MediaStore.MediaColumns.DATA, dataPath);
+            LogUtils.d("imageCopy data path: " + dataPath);
+        }
+        String mimeType = imageInfo.getMimeType();
+        Uri mediaStoreUri;
+        if (mimeType.startsWith("video")) {
+            mediaStoreUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        } else if (mimeType.startsWith("image")) {
+            mediaStoreUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else if (mimeType.startsWith("audio")) {
+            mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+        }
+        Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
+        if (destUri == null) {
+            LogUtils.e("StorageSaveUtils copy() insert failed.");
+            return null;
+        }
+        OutputStream outputStream = null;
+        InputStream inputStream = null;
+        try {
+            outputStream = contentResolver.openOutputStream(destUri);
+            if (outputStream != null) {
+                inputStream = contentResolver.openInputStream(srcUri);
+                if (inputStream != null) {
+                    //获得原文件流
+                    byte[] buffer = new byte[2048];
+                    //输出流
+                    //开始处理流
+                    while (inputStream.read(buffer) != -1) {
+                        outputStream.write(buffer);
+                    }
+                    outputStream.flush();
+
+                    // update
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        contentValues.put(MediaStore.MediaColumns.IS_PENDING, false);
+                        contentResolver.update(destUri, contentValues, null, null);
+
+                    }
+                    return destUri;
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Uri imageCopy(Context context, File imageFile, String folderPath) {
+        if (context == null || imageFile == null || !imageFile.exists()) {
+            return null;
+        }
+        ContentResolver contentResolver = context.getContentResolver();
+
+        String displayName = imageFile.getName();
+        String mimeType = MimeType.getMimeTypeFromFilename(displayName);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        contentValues.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
+        contentValues.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+
+        int width = options.outWidth;
+        int height = options.outHeight;
+        if (width * height > 0) {
+            contentValues.put(MediaStore.MediaColumns.WIDTH, width);
+            contentValues.put(MediaStore.MediaColumns.HEIGHT, height);
+        }
+        long size = imageFile.length();
+        if (size > 0) {
+            contentValues.put(MediaStore.MediaColumns.SIZE, size);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, folderPath);
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, true);
+            LogUtils.d("imageCopy folderPath: " + folderPath);
+        } else {
+            String dataPath = getDataPath(folderPath, displayName);
+            contentValues.put(MediaStore.MediaColumns.DATA, dataPath);
+            LogUtils.d("imageCopy data path: " + dataPath);
+        }
+        Uri mediaStoreUri;
+        if (mimeType.startsWith("video")) {
+            mediaStoreUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        } else if (mimeType.startsWith("image")) {
+            mediaStoreUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else if (mimeType.startsWith("audio")) {
+            mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+        }
+        Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
+        if (destUri == null) {
+            LogUtils.e("StorageSaveUtils copy() insert failed.");
+            return null;
+        }
+        OutputStream outputStream = null;
+        InputStream inputStream = null;
+        try {
+            outputStream = contentResolver.openOutputStream(destUri);
+            if (outputStream != null) {
+                inputStream = new FileInputStream(imageFile);
+                //获得原文件流
+                byte[] buffer = new byte[2048];
+                //输出流
+                //开始处理流
+                while (inputStream.read(buffer) != -1) {
+                    outputStream.write(buffer);
+                }
+                outputStream.flush();
+
+                // update
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.put(MediaStore.MediaColumns.IS_PENDING, false);
+                    contentResolver.update(destUri, contentValues, null, null);
+
+                }
+                return destUri;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
