@@ -80,6 +80,7 @@ public final class StorageUriUtils {
         values.put(MediaStore.MediaColumns.TITLE, filename);
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
+        // values.put(MediaStore.MediaColumns.DATE_MODIFIED, System.currentTimeMillis() / 1000);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
         if (fileLength > 0) {
             values.put(MediaStore.MediaColumns.SIZE, fileLength);
