@@ -462,13 +462,13 @@ public final class StorageSaveUtils {
         return null;
     }
 
-    public static Uri imageCopy(Context context, File imageFile, String folderPath) {
+    public static Uri imageCopy(Context context, File imageFile, String filename, String folderPath) {
         if (context == null || imageFile == null || !imageFile.exists()) {
             return null;
         }
         ContentResolver contentResolver = context.getContentResolver();
 
-        String displayName = imageFile.getName();
+        String displayName = TextUtils.isEmpty(filename) ? imageFile.getName() : filename;
         String mimeType = MimeType.getMimeTypeFromFilename(displayName);
 
         ContentValues contentValues = new ContentValues();
