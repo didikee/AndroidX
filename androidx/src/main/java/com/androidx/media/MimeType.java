@@ -4,6 +4,8 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
+import com.androidx.utils.LegacyMimeUtils;
+
 /**
  * user author: didikee
  * create time: 2019-12-03 11:38
@@ -56,7 +58,12 @@ public final class MimeType {
      * @return
      */
     public static String getMimeTypeFromExtension(String extension) {
-        String mimeTypeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        String mimeTypeFromExtension;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            mimeTypeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        } else {
+            mimeTypeFromExtension = LegacyMimeUtils.guessMimeTypeFromExtension(extension);
+        }
         if (TextUtils.isEmpty(mimeTypeFromExtension)) {
             return MimeType.UNKNOWN;
         } else {
@@ -70,7 +77,12 @@ public final class MimeType {
      * @return
      */
     public static String getExtensionFromMimeType(String mimeType) {
-        String extensionFromMimeType = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        String extensionFromMimeType;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            extensionFromMimeType = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        } else {
+            extensionFromMimeType = LegacyMimeUtils.guessExtensionFromMimeType(mimeType);
+        }
         if (TextUtils.isEmpty(extensionFromMimeType)) {
             return "";
         } else {
