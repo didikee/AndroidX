@@ -23,6 +23,8 @@ import java.util.ArrayList;
  */
 public final class UriUtils {
     public static final String DATE_TAKEN = "datetaken";
+    public static final Uri EXTERNAL_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    public static final Uri EXTERNAL_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
     @Deprecated
     public static MediaUriInfo getMediaInfo(ContentResolver contentResolver, Uri uri) {
