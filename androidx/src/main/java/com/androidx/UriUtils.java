@@ -213,6 +213,12 @@ public final class UriUtils {
         return null;
     }
 
+    /**
+     * 旋转方向的字段在api29开始才加入，所以目前还是推荐通过媒体解析得到视频的基本媒体信息，文件信息的话倒是可以使用uri查询的形式
+     * @param contentResolver
+     * @param uri
+     * @return
+     */
     public static MediaUriInfo getVideoInfo(ContentResolver contentResolver, Uri uri) {
         if (contentResolver != null && uri != null) {
             ArrayList<String> projections = getCommonProjects();
@@ -223,7 +229,7 @@ public final class UriUtils {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 projections.add(UriUtils.DATE_TAKEN);
                 //在sdk >= 29 后才加入了视频的方向api,所以先不取这个字段
-                // projections.add(MediaStore.Video.Media.ORIENTATION);
+                projections.add(MediaStore.Video.Media.ORIENTATION);
             } else {
                 projections.add(MediaStore.Video.Media.DATE_TAKEN);
             }
@@ -251,13 +257,13 @@ public final class UriUtils {
                         // custom
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
+                            mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
                         } else {
                             mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_TAKEN)));
                         }
                         mediaUriInfo.setDuration(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
                         mediaUriInfo.setWidth(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)));
                         mediaUriInfo.setHeight(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)));
-//                        mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
                         return mediaUriInfo;
                     }
                 }
