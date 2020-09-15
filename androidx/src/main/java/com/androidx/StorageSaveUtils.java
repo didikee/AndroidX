@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * user author: didikee
  * create time: 2019-12-02 16:31
@@ -521,6 +524,97 @@ public final class StorageSaveUtils {
             outputStream = contentResolver.openOutputStream(destUri);
             if (outputStream != null) {
                 inputStream = new FileInputStream(imageFile);
+                //获得原文件流
+                byte[] buffer = new byte[2048];
+                //输出流
+                //开始处理流
+                while (inputStream.read(buffer) != -1) {
+                    outputStream.write(buffer);
+                }
+                outputStream.flush();
+
+                // update
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.put(MediaStore.MediaColumns.IS_PENDING, false);
+                    contentResolver.update(destUri, contentValues, null, null);
+
+                }
+                return destUri;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * 复制 音频file 到 外部存储中
+     * @param context
+     * @param audioFile
+     * @param filename
+     * @param relativeFolder
+     * @param absoluteFolder
+     * @return
+     */
+    public static Uri copyAudioTo(Context context, File audioFile, @Nullable String filename, @NonNull String relativeFolder, @NonNull String absoluteFolder) {
+        if (context == null || audioFile == null || !audioFile.exists()) {
+            return null;
+        }
+        ContentResolver contentResolver = context.getContentResolver();
+
+        String displayName = TextUtils.isEmpty(filename) ? audioFile.getName() : filename;
+        String mimeType = MimeType.getMimeTypeFromFilename(displayName);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        contentValues.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
+        contentValues.put(UriUtils.DATE_TAKEN, System.currentTimeMillis());
+
+        long size = audioFile.length();
+        if (size > 0) {
+            contentValues.put(MediaStore.MediaColumns.SIZE, size);
+        }
+        if (!TextUtils.isEmpty(relativeFolder) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, relativeFolder);
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, true);
+            LogUtils.d("copyAudioTo folderPath: " + relativeFolder);
+        } else if (!TextUtils.isEmpty(absoluteFolder)) {
+            String dataPath = getDataPath(absoluteFolder, displayName);
+            contentValues.put(MediaStore.MediaColumns.DATA, dataPath);
+            LogUtils.d("copyAudioTo data path: " + dataPath);
+        } else {
+            return null;
+        }
+
+        Uri mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
+        if (destUri == null) {
+            LogUtils.e("StorageSaveUtils copyAudioTo() insert uri failed.");
+            return null;
+        }
+        OutputStream outputStream = null;
+        InputStream inputStream = null;
+        try {
+            outputStream = contentResolver.openOutputStream(destUri);
+            if (outputStream != null) {
+                inputStream = new FileInputStream(audioFile);
                 //获得原文件流
                 byte[] buffer = new byte[2048];
                 //输出流
