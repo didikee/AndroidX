@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import com.androidx.media.MimeType;
+import com.androidx.utils.UriUtils;
 
 import java.io.File;
 

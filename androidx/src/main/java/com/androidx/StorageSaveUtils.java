@@ -12,6 +12,7 @@ import android.text.TextUtils;
 
 import com.androidx.media.MediaUriInfo;
 import com.androidx.media.MimeType;
+import com.androidx.utils.UriUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

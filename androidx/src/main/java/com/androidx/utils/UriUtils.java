@@ -1,4 +1,4 @@
-package com.androidx;
+package com.androidx.utils;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -11,8 +11,10 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import com.androidx.LogUtils;
 import com.androidx.media.MediaUriInfo;
 import com.androidx.media.MimeType;
+import com.androidx.media.VideoMetaData;
 
 import java.util.ArrayList;
 
@@ -422,6 +424,10 @@ public final class UriUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static VideoMetaData getVideoMetaData(Context context, Uri videoUri) {
+        return MediaMetadataHelper.getVideoMetaData(context, videoUri);
     }
 
 }
