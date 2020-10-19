@@ -16,7 +16,11 @@ import com.androidx.media.MediaUriInfo;
 import com.androidx.media.MimeType;
 import com.androidx.media.VideoMetaData;
 
+import java.io.File;
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 
 /**
  * user author: didikee
@@ -430,4 +434,47 @@ public final class UriUtils {
         return MediaMetadataHelper.getVideoMetaData(context, videoUri);
     }
 
+
+    /**
+     * 对旧版api设计的获取java file的绝对路径
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static String getPathFromUri(Context context, Uri uri) {
+        //得到uri，后面就是将uri转化成file的过程
+        if (context == null || uri == null) {
+            return null;
+        }
+        String pathFromUri;
+        int sdkInt = Build.VERSION.SDK_INT;
+        if (sdkInt >= 19) {
+            pathFromUri = Uri2Path.getRealPathFromURI_API19(context, uri);
+        } else if (sdkInt >= 11 && sdkInt < 19) {
+            pathFromUri = Uri2Path.getRealPathFromURI_API11to18(context, uri);
+        } else {
+            pathFromUri = Uri2Path.getRealPathFromURI_BelowAPI11(context, uri);
+        }
+        return pathFromUri;
+    }
+
+    /**
+     * 这个需要测试
+     * @param context
+     * @param file
+     * @return
+     */
+    public static Uri getUriFrom(Context context, File file) {
+        return getUriFrom(context, context.getPackageName() + ".FileProvider", file);
+    }
+
+    public static Uri getUriFrom(Context context, @NonNull String authority, File file) {
+        Uri uri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            uri = FileProvider.getUriForFile(context, authority, file);
+        } else {
+            uri = Uri.fromFile(file);
+        }
+        return uri;
+    }
 }
