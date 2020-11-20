@@ -101,7 +101,7 @@ public final class UriUtils {
         }
         if (TextUtils.isEmpty(mimeType)) {
             // mimeType = getMimeType(context, uri);
-            mimeType = getMimeType(context.getContentResolver(), uri);
+            mimeType = queryMimeType(context.getContentResolver(), uri);
             LogUtils.e("getMediaInfo mimeType: " + mimeType);
         }
         if (TextUtils.isEmpty(mimeType)) {
@@ -121,7 +121,21 @@ public final class UriUtils {
         }
     }
 
-    private static String getMimeType(Context context, Uri uri) {
+    /**
+     * 获取文件的类型
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static String getMimeType(Context context, Uri uri) {
+        String mimeType = parseMimeType(context, uri);
+        if (TextUtils.isEmpty(mimeType)) {
+            mimeType = queryMimeType(context.getContentResolver(), uri);
+        }
+        return mimeType;
+    }
+
+    private static String parseMimeType(Context context, Uri uri) {
         String mimeType = "";
         MediaMetadataRetriever metadataRetriever = null;
         try {
@@ -138,7 +152,7 @@ public final class UriUtils {
         return mimeType;
     }
 
-    private static String getMimeType(ContentResolver contentResolver, Uri uri) {
+    private static String queryMimeType(ContentResolver contentResolver, Uri uri) {
         String mimeType = "";
         String[] projections = new String[]{
                 MediaStore.MediaColumns.MIME_TYPE,
