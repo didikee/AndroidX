@@ -491,4 +491,16 @@ public final class UriUtils {
         }
         return uri;
     }
+
+    /**
+     * 从asset路径创建uri
+     * @param assetPath file:///android_asset/${RELATIVEPATH}
+     * @return
+     */
+    public static Uri createUri(String assetPath) {
+        if (TextUtils.isEmpty(assetPath)) {
+            assetPath = "";/*avoid exception*/
+        }
+        return Uri.parse("file:///android_asset/" + assetPath);
+    }
 }
