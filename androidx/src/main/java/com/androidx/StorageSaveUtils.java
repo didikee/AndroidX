@@ -159,7 +159,11 @@ public final class StorageSaveUtils {
         } else if (MimeType.isAudio(mimeType)) {
             destUri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
         } else {
-            destUri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                destUri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+            } else {
+                return null;
+            }
         }
         OutputStream outputStream = null;
         FileInputStream inputStream = null;
@@ -302,7 +306,11 @@ public final class StorageSaveUtils {
         } else if (mimeType.startsWith("audio")) {
             mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         } else {
-            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            } else {
+                return null;
+            }
         }
         Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
         if (destUri == null) {
@@ -410,7 +418,11 @@ public final class StorageSaveUtils {
         } else if (mimeType.startsWith("audio")) {
             mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         } else {
-            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            } else {
+                return null;
+            }
         }
         Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
         if (destUri == null) {
@@ -512,7 +524,11 @@ public final class StorageSaveUtils {
         } else if (mimeType.startsWith("audio")) {
             mediaStoreUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         } else {
-            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            } else {
+                return null;
+            }
         }
         Uri destUri = contentResolver.insert(mediaStoreUri, contentValues);
         if (destUri == null) {
