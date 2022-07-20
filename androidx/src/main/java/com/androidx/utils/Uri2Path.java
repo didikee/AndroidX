@@ -17,10 +17,10 @@ import java.util.Locale;
 import androidx.annotation.RequiresApi;
 
 /**
- * Created by didik on 2016/12/10.
+ * Created by didikee on 2016/12/10.
  */
 
-class Uri2Path {
+final class Uri2Path {
     private Uri2Path() {
     }
 

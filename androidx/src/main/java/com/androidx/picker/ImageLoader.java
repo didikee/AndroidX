@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * create time: 2019-07-18 13:43
  * description: 获取手机里的视频
  */
+@Deprecated
 public class ImageLoader extends AbsMediaLoader {
     public static final int IMAGE = 0;
     public static final int IMAGE_WITHOUT_GIF = 1;

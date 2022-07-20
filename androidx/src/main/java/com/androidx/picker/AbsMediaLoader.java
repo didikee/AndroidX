@@ -3,16 +3,20 @@ package com.androidx.picker;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.text.TextUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import androidx.annotation.Nullable;
 
 /**
  * user author: didikee
  * create time: 2020-01-01 20:01
  * description: 
  */
+@Deprecated
 public abstract class AbsMediaLoader {
 
     public abstract ArrayList<MediaFolder> get(Context context, String folderPath);
@@ -57,6 +61,19 @@ public abstract class AbsMediaLoader {
      * @param mediaItem
      */
     protected abstract void bindCursorData(Cursor cursor, MediaItem mediaItem);
+
+    protected boolean applyFolderFilter(@Nullable String data, @Nullable String relativePath, @Nullable String folderPath) {
+        // 文件夹过滤
+        // android9:手机存储/DCIM/VideoMusicEditor/
+        if (!TextUtils.isEmpty(data) && !data.startsWith(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +folderPath)) {
+            return true;
+        }
+        // android10:DCIM/VideoMusicEditor/adb.mp4
+        if (!TextUtils.isEmpty(relativePath) && !relativePath.startsWith(folderPath)) {
+            return true;
+        }
+        return false;
+    }
 
 
     protected String[] getParentInfoFromData(String data) {

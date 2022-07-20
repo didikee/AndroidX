@@ -5,6 +5,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 /**
  * user author: didikee
  * create time: 2019-12-03 09:15
@@ -68,16 +70,18 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.height = height;
     }
 
+    @NonNull
     public String getData() {
-        return data;
+        return TextUtils.isEmpty(data) ? "" : data;
     }
 
     public void setData(String data) {
         this.data = data;
     }
 
+    @NonNull
     public String getRelativePath() {
-        return relativePath;
+        return TextUtils.isEmpty(relativePath) ? "" : relativePath;
     }
 
     public void setRelativePath(String relativePath) {
@@ -108,6 +112,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.dateModified = dateModified;
     }
 
+    @NonNull
     public String getPath() {
         if (Build.VERSION.SDK_INT >= 29) {
             if (!TextUtils.isEmpty(data)) {

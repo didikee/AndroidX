@@ -18,6 +18,7 @@ import java.util.ArrayList;
  * create time: 2019-07-18 13:43
  * description: 获取手机里的视频
  */
+@Deprecated
 public class VideoLoader extends AbsMediaLoader {
 
     @Override
@@ -50,7 +51,7 @@ public class VideoLoader extends AbsMediaLoader {
          * MediaStore.Video.Media.DATA 在android10上已经过时了
          * 真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
          */
-        if (Build.VERSION.SDK_INT >= 29/*android 10*/) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q/*android 10*/) {
             projections.add(MediaStore.Video.Media.RELATIVE_PATH);
         } else {
             projections.add(MediaStore.Video.Media.DATA);
@@ -92,6 +93,10 @@ public class VideoLoader extends AbsMediaLoader {
                 String[] parentInfo = getParentInfoFromRelativePath(relativePath);
                 parentName = parentInfo[0];
                 parentPath = parentInfo[1];
+            }
+            // 文件夹过滤
+            if (applyFolderFilter(data, relativePath, folderPath)) {
+                continue;
             }
 
             long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));

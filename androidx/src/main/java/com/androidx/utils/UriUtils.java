@@ -8,19 +8,26 @@ import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import com.androidx.CustomFileProvider;
 import com.androidx.LogUtils;
+import com.androidx.media.MagicBytes;
 import com.androidx.media.MediaUriInfo;
 import com.androidx.media.MimeType;
 import com.androidx.media.VideoMetaData;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.FileProvider;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 /**
  * user author: didikee
@@ -31,6 +38,9 @@ public final class UriUtils {
     public static final String DATE_TAKEN = "datetaken";
     public static final Uri EXTERNAL_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     public static final Uri EXTERNAL_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+
+    private UriUtils() {
+    }
 
     @Deprecated
     public static MediaUriInfo getMediaInfo(ContentResolver contentResolver, Uri uri) {
@@ -133,6 +143,24 @@ public final class UriUtils {
             mimeType = queryMimeType(context.getContentResolver(), uri);
         }
         return mimeType;
+    }
+
+    @WorkerThread
+    public static String getMimeTypeFromFileHeader(ContentResolver resolver, Uri uri) {
+        try {
+            InputStream inputStream = resolver.openInputStream(uri);
+            return getMimeTypeFromFileHeader(inputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    @WorkerThread
+    public static String getMimeTypeFromFileHeader(InputStream inputStream) {
+        byte[] extract = MagicBytes.extract(inputStream, 512 + 128);
+        String type = MagicBytes.getType(extract);
+        return MimeType.getMimeTypeFromExtension(type);
     }
 
     private static String parseMimeType(Context context, Uri uri) {
@@ -424,10 +452,12 @@ public final class UriUtils {
 
     /**
      * 调用第三方的视频播放器播放视频
+     * 打开任意类的文件请使用
      * @param activity
      * @param videoUri
      * @return
      */
+    @Deprecated
     public static boolean playVideo(Activity activity, Uri videoUri) {
         if (activity == null || videoUri == null) {
             return false;
@@ -444,8 +474,63 @@ public final class UriUtils {
         return false;
     }
 
+    public static void openWith(@NonNull Context context, @NonNull Uri uri) throws Exception {
+        openWith(context, uri, null, null);
+    }
+
+    /**
+     * 试图打开任意的uri
+     * @param context
+     * @param uri
+     * @param mimeType
+     * @param title
+     * @throws Exception
+     */
+    public static void openWith(@NonNull Context context, @NonNull Uri uri, @Nullable String mimeType, @Nullable String title) throws Exception {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        if (TextUtils.isEmpty(mimeType)) {
+            MediaUriInfo baseInfo = getBaseInfo(context.getContentResolver(), uri);
+            if (baseInfo != null) {
+                if (TextUtils.isEmpty(baseInfo.getMimeType())) {
+                    if (!TextUtils.isEmpty(baseInfo.getDisplayName())) {
+                        mimeType = MimeType.getMimeTypeFromFilename(baseInfo.getDisplayName());
+                    }
+                } else {
+                    mimeType = baseInfo.getMimeType();
+                }
+            }
+        }
+        if (TextUtils.isEmpty(mimeType)) {
+            String pathFromUri = getPathFromUri(context, uri);
+            if (!TextUtils.isEmpty(pathFromUri)) {
+                File file = new File(pathFromUri);
+                if (file.exists()) {
+                    mimeType = MimeType.getMimeTypeFromFilename(file.getName());
+                }
+            }
+        }
+        if (TextUtils.isEmpty(mimeType)) {
+            mimeType = "*/*";
+        }
+        intent.setDataAndType(uri, mimeType);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        context.startActivity(Intent.createChooser(intent, TextUtils.isEmpty(title) ? "" : title));
+    }
+
+    /**
+     * 获取视频的信息
+     * @param context
+     * @param videoUri
+     * @return
+     */
+    @NonNull
     public static VideoMetaData getVideoMetaData(Context context, Uri videoUri) {
         return MediaMetadataHelper.getVideoMetaData(context, videoUri);
+    }
+
+    @NonNull
+    public static VideoMetaData getVideoMetaData(File videoFile) {
+        return MediaMetadataHelper.getVideoMetaData(videoFile);
     }
 
 
@@ -485,11 +570,24 @@ public final class UriUtils {
     public static Uri getUriFrom(Context context, @NonNull String authority, File file) {
         Uri uri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            uri = FileProvider.getUriForFile(context, authority, file);
+            uri = CustomFileProvider.getUriForFile(context, authority, file);
         } else {
             uri = Uri.fromFile(file);
         }
         return uri;
+    }
+
+    @Nullable
+    public static FileDescriptor getFileDescriptor(ContentResolver resolver, Uri uri, boolean write) {
+        try {
+            ParcelFileDescriptor parcelFileDescriptor = resolver.openFileDescriptor(uri, write ? "w" : "r");
+            if (parcelFileDescriptor != null) {
+                return parcelFileDescriptor.getFileDescriptor();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

@@ -11,6 +11,7 @@ public final class VideoMetaData {
     private int height;
 
     private long duration;
+    private long size;
     // 一下这些参数都可能没有
     private int bitRate;
     private int rotation;
@@ -18,6 +19,9 @@ public final class VideoMetaData {
     private int colorFormat;
     private int frameRate;//默认值
     private float iFrameRate;
+    private double videoBitrate;
+    private double audioBitrate;
+
 
     public VideoMetaData() {
     }
@@ -92,6 +96,30 @@ public final class VideoMetaData {
         this.iFrameRate = iFrameRate;
     }
 
+    public double getVideoBitrate() {
+        return videoBitrate;
+    }
+
+    public void setVideoBitrate(double videoBitrate) {
+        this.videoBitrate = videoBitrate;
+    }
+
+    public double getAudioBitrate() {
+        return audioBitrate;
+    }
+
+    public void setAudioBitrate(double audioBitrate) {
+        this.audioBitrate = audioBitrate;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
     public int[] getRealSize() {
         // 获取真实的宽高
         int realWidth = width;
@@ -104,17 +132,28 @@ public final class VideoMetaData {
         return new int[]{realWidth, realHeight};
     }
 
+    /**
+     * 当这些信息是有的表示该视频信息合规
+     * @return true：视频信息正确
+     */
+    public boolean isValid() {
+        return width > 0 && height > 0 && duration > 0;
+    }
+
     @Override
     public String toString() {
         return "VideoMetaData{" +
                 "width=" + width +
                 ", height=" + height +
                 ", duration=" + duration +
+                ", size=" + size +
                 ", bitRate=" + bitRate +
                 ", rotation=" + rotation +
                 ", colorFormat=" + colorFormat +
                 ", frameRate=" + frameRate +
                 ", iFrameRate=" + iFrameRate +
+                ", videoBitrate=" + videoBitrate +
+                ", audioBitrate=" + audioBitrate +
                 '}';
     }
 }

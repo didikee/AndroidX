@@ -5,11 +5,18 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
+import com.androidx.LogUtils;
+import com.androidx.media.MediaUriInfo;
 import com.androidx.media.VideoMetaData;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -49,106 +56,203 @@ import androidx.annotation.Nullable;
  */
 class MediaMetadataHelper {
     private static final String TAG = "MediaMetadataHelper";
+    private static final double SECOND = 1000 * 1000.0;
 
-    @Nullable
+    @NonNull
     public static VideoMetaData getVideoMetaData(Context context, Uri videoUri) {
-        if (videoUri == null) {
-            return null;
+        long fileSize = 0;
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            String pathFromUri = UriUtils.getPathFromUri(context, videoUri);
+            File file = new File(pathFromUri);
+            if (file.exists()) {
+                fileSize = file.length();
+            }
+        } else {
+            MediaUriInfo baseInfo = UriUtils.getBaseInfo(context.getContentResolver(), videoUri);
+            fileSize = baseInfo == null ? 0 : baseInfo.getSize();
         }
-        MediaMetadataRetriever retriever = null;
-        try {
-            retriever = new MediaMetadataRetriever();
-            //use one of overloaded setDataSource() functions to set your data source
-            retriever.setDataSource(context, videoUri);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "" + e.getMessage());
-        }
-        if (retriever == null) {
-            return null;
-        }
-        VideoMetaData metaData = new VideoMetaData();
+        FileDescriptor fileDescriptor = UriUtils.getFileDescriptor(context.getContentResolver(), videoUri, false);
+        return getVideoMetaData(fileDescriptor, fileSize);
+    }
 
+
+    @NonNull
+    public static VideoMetaData getVideoMetaData(FileDescriptor fileDescriptor, long fileSize) {
+        VideoMetaData metaData = new VideoMetaData();
+        metaData.setSize(fileSize);
+        if (fileDescriptor == null) {
+            return metaData;
+        }
+
+        MediaMetadataRetriever mediaMetadataRetriever = null;
+        try {
+            mediaMetadataRetriever = new MediaMetadataRetriever();
+            mediaMetadataRetriever.setDataSource(fileDescriptor);
+            fillDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } finally {
+            if (mediaMetadataRetriever != null) {
+                mediaMetadataRetriever.release();
+            }
+        }
+
+        MediaExtractor mediaExtractor = null;
+        try {
+            mediaExtractor = new MediaExtractor();
+            mediaExtractor.setDataSource(fileDescriptor);
+            fillDataFromMediaExtractor(mediaExtractor, metaData, fileSize);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (mediaExtractor != null) {
+                mediaExtractor.release();
+            }
+        }
+
+        return metaData;
+    }
+
+    @NonNull
+    public static VideoMetaData getVideoMetaData(File videoFile) {
+        VideoMetaData metaData = new VideoMetaData();
+        if (videoFile == null || !videoFile.exists()) {
+            return metaData;
+        }
+        metaData.setSize(videoFile.length());
+
+        MediaMetadataRetriever mediaMetadataRetriever = null;
+        try {
+            mediaMetadataRetriever = new MediaMetadataRetriever();
+            mediaMetadataRetriever.setDataSource(videoFile.getAbsolutePath());
+            fillDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } finally {
+            if (mediaMetadataRetriever != null) {
+                mediaMetadataRetriever.release();
+            }
+        }
+
+        MediaExtractor mediaExtractor = null;
+        try {
+            mediaExtractor = new MediaExtractor();
+            mediaExtractor.setDataSource(videoFile.getAbsolutePath());
+            fillDataFromMediaExtractor(mediaExtractor, metaData, videoFile.length());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (mediaExtractor != null) {
+                mediaExtractor.release();
+            }
+        }
+        return metaData;
+    }
+
+    private static void fillDataFromMediaMetadataRetriever(MediaMetadataRetriever retriever, VideoMetaData metaData) {
+        if (retriever == null) {
+            return;
+        }
         // retriever not null
         metaData.setDuration(parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION), 0));
         metaData.setRotation(parseInteger(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION), 0));
         metaData.setWidth(parseInteger(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH), 0));
         metaData.setHeight(parseInteger(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT), 0));
         metaData.setBitRate(parseInteger(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE), 0));
+    }
 
-        MediaExtractor extractor = new MediaExtractor();
-        try {
-            //Adjust data source as per the requirement if file, URI, etc.
-            extractor.setDataSource(context, videoUri, null);
-            int numTracks = extractor.getTrackCount();
-            for (int i = 0; i < numTracks; ++i) {
-                MediaFormat format = extractor.getTrackFormat(i);
-                String mime = format.getString(MediaFormat.KEY_MIME);
-                if (mime.startsWith("video/")) {
-                    if (metaData.getFrameRate() <= 0 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
-                        int frameRate = format.getInteger(MediaFormat.KEY_FRAME_RATE);
-                        if (frameRate > 0) {
-                            metaData.setFrameRate(frameRate);
-                        }
-                    }
-                    if (metaData.getDuration() <= 0 && format.containsKey(MediaFormat.KEY_DURATION)) {
-                        long duration = format.getLong(MediaFormat.KEY_DURATION);
-                        if (duration > 0) {
-                            metaData.setDuration(duration);
-                        }
-                    }
-
-                    if (metaData.getWidth() <= 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
-                        int width = format.getInteger(MediaFormat.KEY_WIDTH);
-                        if (width > 0) {
-                            metaData.setWidth(width);
-                        }
-                    }
-                    if (metaData.getHeight() <= 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
-                        int height = format.getInteger(MediaFormat.KEY_HEIGHT);
-                        if (height > 0) {
-                            metaData.setHeight(height);
-                        }
-                    }
-                    if (metaData.getiFrameRate() <= 0 && format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
-                        float iKeyRate = format.getFloat(MediaFormat.KEY_I_FRAME_INTERVAL);
-                        if (iKeyRate > 0) {
-                            metaData.setiFrameRate(iKeyRate);
-                        }
-                    }
-//                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-//                        if (metaData.rotation <= 0 && format.containsKey(MediaFormat.KEY_ROTATION)) {
-//                            int rotation = format.getInteger(MediaFormat.KEY_ROTATION);
-//                            if (rotation )
-//                            L.d("rotation: " + rotation);
-//                            addInfoView(linearLayout, "旋转", String.valueOf(rotation));
-//                        }
-//                    }
-
-                    if (metaData.getBitRate() <= 0 && format.containsKey(MediaFormat.KEY_BIT_RATE)) {
-                        int bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE);
-                        if (bitRate > 0) {
-                            metaData.setBitRate(bitRate);
-                        }
-                    }
-
-//                    if (metaData.colorFormat <= 0 && format.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
-//                        int colorFormat = format.getInteger(MediaFormat.KEY_COLOR_FORMAT);
-//                        L.d("colorFormat: " + colorFormat);
-//                        addInfoView(linearLayout, "颜色格式", String.valueOf(colorFormat));
-//                    }
-
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, e.getMessage());
-        } finally {
-            //Release stuff
-            extractor.release();
+    private static void fillDataFromMediaExtractor(MediaExtractor extractor, VideoMetaData metaData, long fileSize) {
+        if (extractor == null) {
+            return;
         }
-        retriever.release();
-        return metaData;
+        int numTracks = extractor.getTrackCount();
+        double audioSize = 0, videoSize = 0;
+        double audioBitrate = 0, videoBitrate = 0;
+        double videoDuration = 0, audioDuration = 0;
+        for (int i = 0; i < numTracks; ++i) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            int bitRate = 0, sampleRate = 0, channelCount = 0;
+            long duration = 0;
+            if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE);
+            }
+            if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+            }
+            if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+            }
+            LogUtils.d("Mime: " + mime + " sampleRate: " + sampleRate + " channelCount: " + channelCount);
+
+            if (mime.startsWith("audio/")) {
+                if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                    audioDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND;
+                }
+                audioSize = bitRate * audioDuration / (8.0);
+                audioBitrate = bitRate;
+                LogUtils.d("getVideoInfo audio size: " + audioSize + " format size: " + (audioSize * 1.0 / (1024L * 1024)) + "MB");
+            }
+
+            if (mime.startsWith("video/")) {
+                if (metaData.getFrameRate() <= 0 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+                    int frameRate = format.getInteger(MediaFormat.KEY_FRAME_RATE);
+                    if (frameRate > 0) {
+                        metaData.setFrameRate(frameRate);
+                    }
+                }
+                if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                    videoDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND;
+                }
+                if (metaData.getWidth() <= 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
+                    int width = format.getInteger(MediaFormat.KEY_WIDTH);
+                    if (width > 0) {
+                        metaData.setWidth(width);
+                    }
+                }
+                if (metaData.getHeight() <= 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
+                    int height = format.getInteger(MediaFormat.KEY_HEIGHT);
+                    if (height > 0) {
+                        metaData.setHeight(height);
+                    }
+                }
+                if (metaData.getiFrameRate() <= 0 && format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
+                    float iKeyRate = format.getFloat(MediaFormat.KEY_I_FRAME_INTERVAL);
+                    if (iKeyRate > 0) {
+                        metaData.setiFrameRate(iKeyRate);
+                    }
+                }
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    if (metaData.getRotation() <= 0 && format.containsKey(MediaFormat.KEY_ROTATION)) {
+                        metaData.setRotation(format.getInteger(MediaFormat.KEY_ROTATION));
+                    }
+                }
+
+                if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                    bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE);
+                    if (metaData.getBitRate() <= 0 && bitRate > 0) {
+                        metaData.setBitRate(bitRate);
+                    }
+                }
+
+                if (metaData.getColorFormat() <= 0 && format.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
+                    int colorFormat = format.getInteger(MediaFormat.KEY_COLOR_FORMAT);
+                    if (colorFormat != 0) {
+                        metaData.setColorFormat(colorFormat);
+                    }
+                }
+                videoSize = bitRate * duration / SECOND;
+                LogUtils.d("getVideoInfo video size: " + videoSize);
+            }
+        }/*end*/
+        metaData.setAudioBitrate(audioBitrate);
+        if (fileSize > 0) {
+            double fileBitrate = (fileSize * 8.0 / videoDuration);
+            LogUtils.d("getVideoInfo file bitrate: " + fileBitrate + "/bps");
+            videoBitrate = (fileSize - audioSize) * 8.0 / videoDuration;
+            metaData.setVideoBitrate(videoBitrate);
+            LogUtils.d("getVideoInfo video bitrate: " + videoBitrate + "/bps");
+        }
 
     }
 

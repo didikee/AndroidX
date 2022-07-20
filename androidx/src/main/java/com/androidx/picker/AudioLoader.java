@@ -18,6 +18,7 @@ import java.util.ArrayList;
  * create time: 2020-01-6 1:24
  * description: 获取手机里的音频
  */
+@Deprecated
 public class AudioLoader extends AbsMediaLoader {
 
     @Override
@@ -92,6 +93,11 @@ public class AudioLoader extends AbsMediaLoader {
                 String[] parentInfo = getParentInfoFromRelativePath(relativePath);
                 parentName = parentInfo[0];
                 parentPath = parentInfo[1];
+            }
+
+            // 文件夹过滤
+            if (applyFolderFilter(data, relativePath, folderPath)) {
+                continue;
             }
 
             // common
