@@ -1,5 +1,6 @@
 package com.androidx.utils;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -60,30 +61,29 @@ class MediaMetadataHelper {
 
     @NonNull
     public static VideoMetaData getVideoMetaData(Context context, Uri videoUri) {
-        long fileSize = 0;
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             String pathFromUri = UriUtils.getPathFromUri(context, videoUri);
             File file = new File(pathFromUri);
-            if (file.exists()) {
-                fileSize = file.length();
-            }
-        } else {
-            MediaUriInfo baseInfo = UriUtils.getBaseInfo(context.getContentResolver(), videoUri);
-            fileSize = baseInfo == null ? 0 : baseInfo.getSize();
+            return getVideoMetaData(file);
         }
-        FileDescriptor fileDescriptor = UriUtils.getFileDescriptor(context.getContentResolver(), videoUri, false);
-        return getVideoMetaData(fileDescriptor, fileSize);
+        return getVideoMetaDataForUri(context.getContentResolver(), videoUri);
     }
 
-
     @NonNull
-    public static VideoMetaData getVideoMetaData(FileDescriptor fileDescriptor, long fileSize) {
+    private static VideoMetaData getVideoMetaDataForUri(ContentResolver resolver, Uri videoUri) {
         VideoMetaData metaData = new VideoMetaData();
-        metaData.setSize(fileSize);
+        MediaUriInfo baseInfo = UriUtils.getBaseInfo(resolver, videoUri);
+        if (baseInfo != null) {
+            metaData.setSize(baseInfo.getSize());
+            metaData.setDisplayName(baseInfo.getDisplayName());
+            metaData.setData(baseInfo.getData());
+            metaData.setDateModified(baseInfo.getDateModified());
+            metaData.setRelativePath(baseInfo.getRelativePath());
+        }
+        FileDescriptor fileDescriptor = UriUtils.getFileDescriptor(resolver, videoUri, false);
         if (fileDescriptor == null) {
             return metaData;
         }
-
         MediaMetadataRetriever mediaMetadataRetriever = null;
         try {
             mediaMetadataRetriever = new MediaMetadataRetriever();
@@ -101,7 +101,7 @@ class MediaMetadataHelper {
         try {
             mediaExtractor = new MediaExtractor();
             mediaExtractor.setDataSource(fileDescriptor);
-            fillDataFromMediaExtractor(mediaExtractor, metaData, fileSize);
+            fillDataFromMediaExtractor(mediaExtractor, metaData);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -109,9 +109,9 @@ class MediaMetadataHelper {
                 mediaExtractor.release();
             }
         }
-
         return metaData;
     }
+
 
     @NonNull
     public static VideoMetaData getVideoMetaData(File videoFile) {
@@ -120,6 +120,9 @@ class MediaMetadataHelper {
             return metaData;
         }
         metaData.setSize(videoFile.length());
+        metaData.setDisplayName(videoFile.getName());
+        metaData.setData(videoFile.getAbsolutePath());
+        metaData.setDateModified(videoFile.lastModified());
 
         MediaMetadataRetriever mediaMetadataRetriever = null;
         try {
@@ -138,7 +141,7 @@ class MediaMetadataHelper {
         try {
             mediaExtractor = new MediaExtractor();
             mediaExtractor.setDataSource(videoFile.getAbsolutePath());
-            fillDataFromMediaExtractor(mediaExtractor, metaData, videoFile.length());
+            fillDataFromMediaExtractor(mediaExtractor, metaData);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -161,7 +164,7 @@ class MediaMetadataHelper {
         metaData.setBitRate(parseInteger(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE), 0));
     }
 
-    private static void fillDataFromMediaExtractor(MediaExtractor extractor, VideoMetaData metaData, long fileSize) {
+    private static void fillDataFromMediaExtractor(@Nullable MediaExtractor extractor, @NonNull VideoMetaData metaData) {
         if (extractor == null) {
             return;
         }
@@ -246,6 +249,7 @@ class MediaMetadataHelper {
             }
         }/*end*/
         metaData.setAudioBitrate(audioBitrate);
+        long fileSize = metaData.getSize();
         if (fileSize > 0) {
             double fileBitrate = (fileSize * 8.0 / videoDuration);
             LogUtils.d("getVideoInfo file bitrate: " + fileBitrate + "/bps");
