@@ -21,6 +21,8 @@ import androidx.annotation.RequiresApi;
  */
 
 final class Uri2Path {
+    static final String ASSET_PREFIX = "file:///android_asset/"; //assets路径 file:///android_asset/PixelHot/01_Cryptoboyz/cryptoboyz_01.png
+
     private Uri2Path() {
     }
 
@@ -127,6 +129,9 @@ final class Uri2Path {
         }
         // File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            if (uri.toString().startsWith(ASSET_PREFIX)) {
+                return uri.toString();
+            }
             return uri.getPath();
         }
 
