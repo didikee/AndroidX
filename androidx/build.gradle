@@ -9,9 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 32
-        versionName "1.3.2"
-        archivesBaseName = "androidx-$versionName"
+        versionCode 33
+        versionName "1.3.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
