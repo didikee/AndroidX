@@ -9,7 +9,9 @@ import com.androidx.utils.LegacyMimeUtils;
 /**
  * user author: didikee
  * create time: 2019-12-03 11:38
- * description: 
+ * description:
+ *
+ * mimetype列表参考：<a href="https://developer.android.com/reference/androidx/media3/common/MimeTypes">MimeTypes列表</a>
  */
 public final class MimeType {
     public static final String UNKNOWN = "";
@@ -23,6 +25,8 @@ public final class MimeType {
     public static final String JPEG = "image/jpeg";
     public static final String GIF = "image/gif";
     public static final String WEBP = "image/webp";
+    public static final String HEIC = "image/heic";
+    public static final String HEIF = "image/heif";
     // video
     public static final String VIDEO = "video/*";
     public static final String MP4 = "video/mp4";
