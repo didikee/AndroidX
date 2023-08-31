@@ -4,6 +4,8 @@ import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
+import android.text.InputFilter;
+import android.text.Spanned;
 
 import com.androidx.LogUtils;
 import com.androidx.media.MimeType;
@@ -22,6 +24,54 @@ import androidx.annotation.NonNull;
  * description:
  */
 public final class FileUtils {
+    // 屏蔽的非法文件名字符
+    public static final String BLOCK_FILE_CHARS = "\\/:*?\"<>|";
+
+    public static InputFilter createFilenameInputFilter() {
+        return new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                if (source != null && BLOCK_FILE_CHARS.contains(source)) {
+                    return "";
+                }
+                return null;
+            }
+        };
+    }
+
+    public static InputFilter createBlockCharsInputFilter(String blockChars) {
+        return new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                if (source != null && blockChars.contains(source)) {
+                    return "";
+                }
+                return null;
+            }
+        };
+    }
+
+
+    /**
+     * 创建默认时间样式的文件名：yyyyMMdd_HHmmss -> 20230831_173302
+     * @param timeMs 毫秒
+     * @return 默认样式(yyyyMMdd_HHmmss)的格式化时间字符串
+     */
+    public static String createFileDisplayName(long timeMs) {
+        return TimeUtils.format(TimeUtils.DATE_FORMAT_1, timeMs).toString();
+    }
+
+    public static boolean isFilenameValid(String filename) {
+        File file = new File(filename);
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            return true;
+        } catch (IOException e) {
+            LogUtils.d("isFilenameValid exception: " + e.getMessage());
+        }
+        return false;
+    }
+
     private static final MediaScannerConnection.OnScanCompletedListener ON_SCAN_COMPLETED_LISTENER = new MediaScannerConnection.OnScanCompletedListener() {
         @Override
         public void onScanCompleted(String path, Uri uri) {
