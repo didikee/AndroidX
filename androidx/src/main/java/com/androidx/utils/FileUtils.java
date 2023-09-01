@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 public final class FileUtils {
     // 屏蔽的非法文件名字符
     public static final String BLOCK_FILE_CHARS = "\\/:*?\"<>|";
+    public static final String BLOCK_DISPLAY_NAME_CHARS = "\\/:*?\"<>|.";
 
     public static InputFilter createFilenameInputFilter() {
         return new InputFilter() {
@@ -37,6 +38,9 @@ public final class FileUtils {
                 return null;
             }
         };
+    }
+    public static InputFilter createDisplayNameInputFilter() {
+        return createBlockCharsInputFilter(BLOCK_DISPLAY_NAME_CHARS);
     }
 
     public static InputFilter createBlockCharsInputFilter(String blockChars) {
