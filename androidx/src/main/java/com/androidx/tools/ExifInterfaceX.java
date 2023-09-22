@@ -17,7 +17,7 @@ import androidx.exifinterface.media.ExifInterface;
  * create time: 4/28/21 5:34 PM
  * description: https://blog.csdn.net/u011002668/article/details/51490712
  */
-class ExifInterfaceX implements IExifInterface {
+public class ExifInterfaceX implements IExifInterface {
 
     @Override
     public ImageExif decodeExif(@NonNull InputStream inputStream) {
