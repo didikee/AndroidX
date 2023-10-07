@@ -1,5 +1,8 @@
 package com.androidx.utils;
 
+import android.media.MediaMetadataRetriever;
+import android.os.Build;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +22,30 @@ public class IOUtils {
             try {
                 closeObj.close();
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void close(AutoCloseable closeObj) {
+        if (closeObj != null) {
+            try {
+                closeObj.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void close(MediaMetadataRetriever retriever) {
+        if (retriever != null) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    retriever.close();
+                }else {
+                    retriever.release();
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

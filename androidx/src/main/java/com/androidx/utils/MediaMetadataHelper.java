@@ -92,9 +92,7 @@ class MediaMetadataHelper {
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } finally {
-            if (mediaMetadataRetriever != null) {
-                mediaMetadataRetriever.release();
-            }
+            IOUtils.close(mediaMetadataRetriever);
         }
 
         MediaExtractor mediaExtractor = null;
@@ -132,9 +130,7 @@ class MediaMetadataHelper {
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } finally {
-            if (mediaMetadataRetriever != null) {
-                mediaMetadataRetriever.release();
-            }
+            IOUtils.close(mediaMetadataRetriever);
         }
 
         MediaExtractor mediaExtractor = null;

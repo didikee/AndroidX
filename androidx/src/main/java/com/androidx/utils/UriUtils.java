@@ -173,9 +173,7 @@ public final class UriUtils {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (metadataRetriever != null) {
-                metadataRetriever.release();
-            }
+            IOUtils.close(metadataRetriever);
         }
         return mimeType;
     }

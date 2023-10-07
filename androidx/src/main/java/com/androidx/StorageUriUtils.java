@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import com.androidx.media.MimeType;
+import com.androidx.utils.IOUtils;
 import com.androidx.utils.UriUtils;
 
 import java.io.File;
@@ -133,9 +134,7 @@ public final class StorageUriUtils {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if (retriever != null) {
-                    retriever.release();
-                }
+                IOUtils.close(retriever);
             }
             return makeVideoValues(folderPath, filename, mimeType, width, height, duration, rotate, file.length());
         }
@@ -149,9 +148,7 @@ public final class StorageUriUtils {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if (retriever != null) {
-                    retriever.release();
-                }
+                IOUtils.close(retriever);
             }
             return makeAudioValues(folderPath, filename, mimeType, duration, file.length());
         }
@@ -169,9 +166,7 @@ public final class StorageUriUtils {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if (retriever != null) {
-                    retriever.release();
-                }
+                IOUtils.close(retriever);
             }
             return makeImageValues(folderPath, filename, mimeType, width, height, rotate, file.length());
         }
