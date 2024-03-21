@@ -82,10 +82,7 @@ class ExifInterfaceCore implements IExifInterface {
         exif.flash = exifInterface.getAttribute(ExifInterface.TAG_FLASH);
         exif.imageLength = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH), 0);
         exif.imageWidth = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH), 0);
-        exif.latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
-        exif.longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-        exif.latitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
-        exif.longitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+
         exif.exposureTime = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
         exif.aperture = exifInterface.getAttribute(ExifInterface.TAG_APERTURE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -99,13 +96,21 @@ class ExifInterfaceCore implements IExifInterface {
             exif.subSecTimeOrig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_ORIG);
             exif.subSecTimeDig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_DIG);
         }
-        exif.altitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE);
-        exif.altitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF);
-        exif.gpsTimeStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
-        exif.gpsDateStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
+
         exif.whiteBalance = exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE);
         exif.focalLength = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH);
         exif.processingMethod = exifInterface.getAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD);
+
+        ImageExif.GPS gps =new ImageExif.GPS();
+        gps.latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+        gps.longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+        gps.latitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+        gps.longitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+        gps.altitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE);
+        gps.altitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF);
+        gps.gpsTimeStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
+        gps.gpsDateStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
+        exif.gps = gps;
         return exif;
     }
 

@@ -19,6 +19,8 @@ public final class MimeType {
     public static final String PREFIX_VIDEO = "video";
     public static final String PREFIX_AUDIO = "audio";
     public static final String PREFIX_IMAGE = "image";
+    // Text
+    public static final String TEXT = "text/plain";
     // image
     public static final String IMAGE = "image/*";
     public static final String PNG = "image/png";

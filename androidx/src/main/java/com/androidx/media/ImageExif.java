@@ -11,14 +11,13 @@ public class ImageExif {
     public String make;             //设备品牌
     public String model;            //设备型号，整形表示，在ExifInterface中有常量对应表示
     public String flash;            //闪光灯
+    public String flashEnergy;      //闪光灯进光量
     public int imageLength;         //图片高度
     public int imageWidth;          //图片宽度
-    public String latitude;         //纬度
-    public String longitude;        //经度
-    public String latitudeRef;      //纬度名（N or S）
-    public String longitudeRef;     //经度名（E or W）
+    public GPS gps;
     public String exposureTime;     //曝光时间
     public String aperture;         //光圈值
+    public String isoSpeed;         //ISO 速度
     public String isoSpeedRatings;  //ISO感光度
     public String dateTimeDigitized;//数字化时间
     /**
@@ -30,12 +29,27 @@ public class ImageExif {
     public String subSecTime;       // 时间，微秒。拼接在 dateTimeDigitized 时间后面得到更精确的时间
     public String subSecTimeOrig;
     public String subSecTimeDig;
-    public String altitude;         //海拔高度
-    public String altitudeRef;      //海拔高度
-    public String gpsTimeStamp;     //时间戳
-    public String gpsDateStamp;     //日期戳
+
     public String whiteBalance;     //白平衡
     public String focalLength;      //焦距
     public String processingMethod; //用于定位查找的全球定位系统处理方法。
 
+    public final static class GPS{
+        public String latitude;         //纬度
+        public String longitude;        //经度
+        public String latitudeRef;      //纬度名（N or S）
+        public String longitudeRef;     //经度名（E or W）
+        public String altitude;         //海拔高度
+        public String altitudeRef;      //海拔高度
+        public String gpsTimeStamp;     //时间戳
+        public String gpsDateStamp;     //日期戳
+
+        public double getLat(){
+            return ExifUtils.INSTANCE.convertDMSFractionToDecimal(latitude);
+        }
+
+        public double getLng(){
+            return ExifUtils.INSTANCE.convertDMSFractionToDecimal(longitude);
+        }
+    }
 }

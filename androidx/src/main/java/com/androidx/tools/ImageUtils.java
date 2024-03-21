@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 /**
  * user author: didikee
  * create time: 4/28/21 5:30 PM
- * description: 
+ * description:
  */
 public final class ImageUtils {
 
@@ -42,6 +42,41 @@ public final class ImageUtils {
         }
         return null;
     }
+
+    public static String getOrientationDescription(int orientation) {
+        String desc;
+        switch (orientation) {
+            case 1:
+                desc = "Flip horizontally";
+                break;
+            case 2:
+                desc = "Flip vertically";
+                break;
+            case 3:
+                desc = "Rotate 180 degrees";
+                break;
+            case 4:
+                desc = "Rotate 180 degrees and flip horizontally";
+                break;
+            case 5:
+                desc = "Rotate 270 degrees and flip horizontally";
+                break;
+            case 6:
+                desc = "Rotate 90 degrees";
+                break;
+            case 7:
+                desc = "Rotate 90 degrees and flip horizontally";
+                break;
+            case 8:
+                desc = "Rotate 270 degrees";
+                break;
+            default:
+                desc = "Normal";
+        }
+        return desc;
+    }
+
+
 
 
 }
