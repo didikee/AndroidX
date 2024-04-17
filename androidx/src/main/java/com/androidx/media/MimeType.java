@@ -42,6 +42,8 @@ public final class MimeType {
     public static final String AMR = "audio/amr";
     public static final String M4A = "audio/mpeg";
 
+    // Document files
+    public static final String PDF = "application/pdf";
 
     public static boolean isVideo(String mimeType) {
         return !TextUtils.isEmpty(mimeType) && mimeType.toLowerCase().startsWith(PREFIX_VIDEO);
