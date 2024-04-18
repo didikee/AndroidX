@@ -11,8 +11,8 @@ object ExifUtils {
      * dmsFraction: 31/1,10/1,2639/100
      * output: 41.40338
      */
-    fun convertDMSFractionToDecimal(dmsFraction: String): Double {
-        if (!TextUtils.isEmpty(dmsFraction) && dmsFraction.contains(",")) {
+    fun convertDMSFractionToDecimal(dmsFraction: String?): Double {
+        if (dmsFraction!=null && dmsFraction.contains(",")) {
             try {
                 val parts = dmsFraction.split(",")
                 val degreesStr = parts[0]

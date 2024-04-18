@@ -21,7 +21,7 @@ public final class ImageUtils {
 
     @Nullable
     public static ImageExif getExif(String path) {
-        return new ExifInterfaceCore().decodeExif(path);
+        return new ExifInterfaceX().decodeExif(path);
     }
 
     @Nullable
@@ -30,13 +30,13 @@ public final class ImageUtils {
             return null;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return new ExifInterfaceCore().decodeExif(context.getContentResolver(), uri);
+            return new ExifInterfaceX().decodeExif(context.getContentResolver(), uri);
         } else {
             String pathFromUri = UriUtils.getPathFromUri(context, uri);
             if (!TextUtils.isEmpty(pathFromUri)) {
                 File file = new File(pathFromUri);
                 if (file.exists()) {
-                    return new ExifInterfaceCore().decodeExif(pathFromUri);
+                    return new ExifInterfaceX().decodeExif(pathFromUri);
                 }
             }
         }

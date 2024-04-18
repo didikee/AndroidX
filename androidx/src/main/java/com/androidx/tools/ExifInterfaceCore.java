@@ -22,6 +22,7 @@ import androidx.annotation.RequiresApi;
  * create time: 4/28/21 5:34 PM
  * description: https://blog.csdn.net/u011002668/article/details/51490712
  */
+@Deprecated
 class ExifInterfaceCore implements IExifInterface {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
