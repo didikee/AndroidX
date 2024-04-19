@@ -1,14 +1,17 @@
 package com.androidx.tools;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 
+import com.androidx.media.ExifUtils;
 import com.androidx.media.ImageExif;
 import com.androidx.utils.UriUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 import androidx.annotation.Nullable;
 
@@ -43,7 +46,7 @@ public final class ImageUtils {
         return null;
     }
 
-    public static String getOrientationDescription(int orientation) {
+    public static String getOrientationDescription(Resources res,int orientation) {
         String desc;
         switch (orientation) {
             case 1:
@@ -74,6 +77,14 @@ public final class ImageUtils {
                 desc = "Normal";
         }
         return desc;
+    }
+
+    public static String formatLongitudeAndLatitude(String originValue){
+        if (!TextUtils.isEmpty(originValue)){
+            double d = ExifUtils.INSTANCE.convertDMSFractionToDecimal(originValue);
+            return String.format(Locale.getDefault(),"%.5f", d);
+        }
+        return "";
     }
 
 

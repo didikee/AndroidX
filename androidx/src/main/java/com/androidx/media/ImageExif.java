@@ -1,5 +1,9 @@
 package com.androidx.media;
 
+import android.text.TextUtils;
+
+import com.androidx.tools.ImageUtils;
+
 /**
  * user author: didikee
  * create time: 4/28/21 5:31 PM
@@ -44,12 +48,23 @@ public class ImageExif {
         public String gpsTimeStamp;     //时间戳
         public String gpsDateStamp;     //日期戳
 
+        //判断gps的经纬度是否正常
+        public boolean isGPSAvailable(){
+            return !TextUtils.isEmpty(latitude) && !TextUtils.isEmpty(longitude);
+        }
         public double getLat(){
             return ExifUtils.INSTANCE.convertDMSFractionToDecimal(latitude);
         }
 
         public double getLng(){
             return ExifUtils.INSTANCE.convertDMSFractionToDecimal(longitude);
+        }
+
+        public String getLatDisplay(){
+            return ImageUtils.formatLongitudeAndLatitude(latitude);
+        }
+        public String getLngDisplay(){
+            return ImageUtils.formatLongitudeAndLatitude(longitude);
         }
     }
 }
