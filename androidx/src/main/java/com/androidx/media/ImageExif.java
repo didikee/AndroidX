@@ -38,6 +38,27 @@ public class ImageExif {
     public String focalLength;      //焦距
     public String processingMethod; //用于定位查找的全球定位系统处理方法。
 
+    public boolean isFlashOn() {
+        String flashIndexValue = flashIndexValue();
+        if (flashIndexValue.length() > 0) {
+            return flashIndexValue.charAt(0) == '1';
+        }
+        return false;
+    }
+
+    private String flashIndexValue() {
+        if (!TextUtils.isEmpty(flash)) {
+            try {
+                int f = Integer.parseInt(flash);
+                String binaryString = Integer.toBinaryString(f);
+                return new StringBuilder(binaryString).reverse().toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+
     public final static class GPS{
         public String latitude;         //纬度
         public String longitude;        //经度
