@@ -76,42 +76,42 @@ class ExifInterfaceCore implements IExifInterface {
     @Nullable
     private ImageExif decodeExif(@NonNull ExifInterface exifInterface) {
         ImageExif exif = new ImageExif();
-        exif.orientation = parseInt(exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION), 0);
-        exif.dateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
-        exif.make = exifInterface.getAttribute(ExifInterface.TAG_MAKE);
-        exif.model = exifInterface.getAttribute(ExifInterface.TAG_MODEL);
-        exif.flash = exifInterface.getAttribute(ExifInterface.TAG_FLASH);
-        exif.imageLength = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH), 0);
-        exif.imageWidth = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH), 0);
+        exif.setOrientation(parseInt(exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION), 0));
+        exif.setDateTime(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
+        exif.setMake(exifInterface.getAttribute(ExifInterface.TAG_MAKE));
+        exif.setModel(exifInterface.getAttribute(ExifInterface.TAG_MODEL));
+        exif.setFlash(exifInterface.getAttribute(ExifInterface.TAG_FLASH));
+        exif.setImageLength(parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH), 0));
+        exif.setImageWidth(parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH), 0));
 
-        exif.exposureTime = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
-        exif.aperture = exifInterface.getAttribute(ExifInterface.TAG_APERTURE);
+        exif.setExposureTime(exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME));
+        exif.setAperture(exifInterface.getAttribute(ExifInterface.TAG_APERTURE));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            exif.isoSpeedRatings = exifInterface.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS);
+            exif.setIsoSpeedRatings(exifInterface.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS));
         } else {
-            exif.isoSpeedRatings = exifInterface.getAttribute(ExifInterface.TAG_ISO);
+            exif.setIsoSpeedRatings(exifInterface.getAttribute(ExifInterface.TAG_ISO));
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            exif.dateTimeDigitized = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED);
-            exif.subSecTime = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME);
-            exif.subSecTimeOrig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_ORIG);
-            exif.subSecTimeDig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_DIG);
+            exif.setDateTimeDigitized(exifInterface.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED));
+            exif.setSubSecTime(exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME));
+            exif.setSubSecTimeOrig(exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_ORIG));
+            exif.setSubSecTimeDig(exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_DIG));
         }
 
-        exif.whiteBalance = exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE);
-        exif.focalLength = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH);
-        exif.processingMethod = exifInterface.getAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD);
+        exif.setWhiteBalance(exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE));
+        exif.setFocalLength(exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH));
+        exif.setProcessingMethod(exifInterface.getAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD));
 
         ImageExif.GPS gps =new ImageExif.GPS();
-        gps.latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
-        gps.longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-        gps.latitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
-        gps.longitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
-        gps.altitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE);
-        gps.altitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF);
-        gps.gpsTimeStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
-        gps.gpsDateStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
-        exif.gps = gps;
+        gps.setLatitude(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
+        gps.setLongitude(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+        gps.setLatitudeRef(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF));
+        gps.setLongitudeRef(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF));
+        gps.setAltitude(exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
+        gps.setAltitudeRef(exifInterface.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF));
+        gps.setGpsTimeStamp(exifInterface.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP));
+        gps.setGpsDateStamp(exifInterface.getAttribute(ExifInterface.TAG_GPS_DATESTAMP));
+        exif.setGps(gps);
         return exif;
     }
 

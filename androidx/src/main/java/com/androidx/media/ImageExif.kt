@@ -10,7 +10,7 @@ import com.androidx.tools.ImageUtils
  * description:
  */
 class ImageExif {
-     var orientation = 0 // 旋转角度，整形表示，在ExifInterface中有常量对应表示
+    var orientation = 0 // 旋转角度，整形表示，在ExifInterface中有常量对应表示
     var dateTime: String = "" //拍摄时间，取决于设备设置的时间
     var make: String = "" //设备品牌
     var model: String = "" //设备型号，整形表示，在ExifInterface中有常量对应表示
