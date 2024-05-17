@@ -57,11 +57,11 @@ public final class AndroidStorage {
     /**
      * 保存bitmap到存储目录,兼容androidx
      *
-     * @param resolver ContentResolver，参见 {@link Context#getContentResolver()}
-     * @param bitmap 图片
+     * @param resolver   ContentResolver，参见 {@link Context#getContentResolver()}
+     * @param bitmap     图片
      * @param folderPath 相对路径，可以通过{@link AndroidStorage#getFolderPath(String, String)}
      *                   其他详情参见 {@link AndroidStorage#getCompatPath(String, String)}
-     * @param filename 文件名，注意拓展名要和bitmap的格式相匹配
+     * @param filename   文件名，注意拓展名要和bitmap的格式相匹配
      * @return 存储成功的uri，如果失败了则返回null
      */
     public static Uri saveBitmap(ContentResolver resolver, Bitmap bitmap, String folderPath, String filename, int quality) {
@@ -149,6 +149,29 @@ public final class AndroidStorage {
         return save(resolver, contentValues, inputStream, EXTERNAL_IMAGE_URI);
     }
 
+    @Nullable
+    public static Uri saveImage(ContentResolver resolver, ContentValues contentValues, ContentTransfer<?> contentTransfer) {
+        Uri insertUri = resolver.insert(EXTERNAL_IMAGE_URI, contentValues);
+        OutputStream outputStream = null;
+        try {
+            outputStream = resolver.openOutputStream(insertUri);
+            long transfer = contentTransfer.convertTo(outputStream);
+            if (transfer > 0) {
+                updateUriFileLength(resolver, insertUri, contentValues, transfer);
+                clearPendingStates(resolver, insertUri, contentValues);
+                return insertUri;
+            } else {
+                delete(resolver, insertUri);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            contentTransfer.release();
+            IOUtils.close(outputStream);
+        }
+        return null;
+    }
+
     public static Uri saveAudio(ContentResolver resolver,
                                 InputStream inputStream,
                                 String folderPath,
@@ -175,6 +198,7 @@ public final class AndroidStorage {
 
     /**
      * 保存音频，文件等
+     *
      * @param resolver
      * @param contentValues
      * @param inputStream
@@ -214,7 +238,7 @@ public final class AndroidStorage {
      * 清楚isPending标志
      * isPending为true时，MediaStore API会忽略它。表现形式就是相册里看不到。
      * 知道isPending 为false时才可见。
-     *
+     * <p>
      * 注意完成写入uri操作后一定要清楚isPending标志位，否则即使写入成功，MediaStore依然是不可见的。
      */
     public static void clearPendingStates(ContentResolver resolver, Uri uri, ContentValues contentValues) {
@@ -226,6 +250,7 @@ public final class AndroidStorage {
 
     /**
      * 更新uri的文件大小
+     *
      * @param resolver
      * @param uri
      * @param contentValues
@@ -242,6 +267,7 @@ public final class AndroidStorage {
 
     /**
      * 删除uri
+     *
      * @param resolver
      * @param uri
      * @return 返回uri在数据库中对应的行位置,-1表示删除失败
@@ -329,10 +355,11 @@ public final class AndroidStorage {
      * 例如，想保存一张照片到 手机存储/Picture/MyFolder/my_photo.jpg
      * 对于低于安卓10：/storage/emluanm0/Picture/MyFolder/my_photo.jpg
      * 高于等于安卓10：Picture/MyFolder/my_photo.jpg
+     *
      * @param folderPath 相对路径:Picture/MyFolder
-     *                           Environment.DIRECTORY_PICTURES + File.separator + "folder";
-     *                           Environment.DIRECTORY_DCIM + File.separator + "folder";
-     * @param filename 文件名
+     *                   Environment.DIRECTORY_PICTURES + File.separator + "folder";
+     *                   Environment.DIRECTORY_DCIM + File.separator + "folder";
+     * @param filename   文件名
      * @return 适用于安卓所有的路径
      */
     public static String getCompatPath(String folderPath, String filename) {
@@ -369,8 +396,9 @@ public final class AndroidStorage {
 
     /**
      * 获取mimetype
-     * @param filename 文件名，带拓展名
-     * @param mimeType 类型
+     *
+     * @param filename        文件名，带拓展名
+     * @param mimeType        类型
      * @param defaultMimeType 默认类型
      * @return
      */
@@ -411,8 +439,9 @@ public final class AndroidStorage {
 
     /**
      * 获取类似.../{Picture/APP_CUSTOM_FOLDER}/...结构的目录
+     *
      * @param standardDir 一级目录，不能为空。为空时Q以上可以运行，低版本会出问题
-     * @param customDir 二级目录，可以为空
+     * @param customDir   二级目录，可以为空
      * @return .../{STANDARD_DIRECTORIES/customDir}/...
      * @deprecated 推荐使用 {@link #getFolderPath(StandardDirectory, String)}
      */
@@ -429,8 +458,9 @@ public final class AndroidStorage {
 
     /**
      * 获取类似.../{Picture/APP_CUSTOM_FOLDER}/...结构的目录
+     *
      * @param standardDir 一级目录，不能为空。为空时Q以上可以运行，低版本会出问题
-     * @param customDir 二级目录，可以为空
+     * @param customDir   二级目录，可以为空
      * @return .../{STANDARD_DIRECTORIES/customDir}/...
      */
     public static String getFolderPath(@NonNull StandardDirectory standardDir, @Nullable String customDir) {
@@ -473,6 +503,7 @@ public final class AndroidStorage {
 
     /**
      * 判断ROM的外部存储是不是实际上可用
+     *
      * @return
      */
     public static boolean isExternalStorageAvailable() {
@@ -492,9 +523,10 @@ public final class AndroidStorage {
 
     /**
      * 复制图片文件到指定的地方
-     * @param resolver ContentResolver
-     * @param imageFile 图片文件
-     * @param folderPath 保存路径，这个路径是和AndroidStorage配合使用的
+     *
+     * @param resolver    ContentResolver
+     * @param imageFile   图片文件
+     * @param folderPath  保存路径，这个路径是和AndroidStorage配合使用的
      * @param newFilename 新的文件名
      * @return 复制后的文件
      */
@@ -550,9 +582,10 @@ public final class AndroidStorage {
 
     /**
      * 复制文件到下载目录中，此目录可以接受任意类型的文件
-     * @param context 上下文
-     * @param anyFile 任意类型的文件
-     * @param newFilename 复制后的文件名，为空时使用原始的文件名
+     *
+     * @param context       上下文
+     * @param anyFile       任意类型的文件
+     * @param newFilename   复制后的文件名，为空时使用原始的文件名
      * @param customDirName 二级目录文件夹名称,为空则放在Downloads目录下
      * @return
      */

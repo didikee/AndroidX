@@ -40,36 +40,28 @@ class ContentValuesHelper private constructor(
     fun orientation(orientation: Int) = apply { this.orientation = orientation }
     fun duration(duration: Long) = apply { this.duration = duration }
 
-    fun withImage(width: Int, height: Int, rotateDegress: Int) {
-        apply {
-            this.width = width
-            this.height = height
-            this.orientation = rotateDegress
-        }
+    fun withImage(width: Int, height: Int, rotateDegress: Int) = apply {
+        this.width = width
+        this.height = height
+        this.orientation = rotateDegress
     }
 
-    fun withVideo(width: Int, height: Int, duration: Long) {
-        apply {
-            this.width = width
-            this.height = height
-            this.duration = duration
-        }
+    fun withVideo(width: Int, height: Int, duration: Long) = apply {
+        this.width = width
+        this.height = height
+        this.duration = duration
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    fun withVideo(width: Int, height: Int, duration: Long, rotateDegress: Int) {
-        apply {
-            this.width = width
-            this.height = height
-            this.duration = duration
-            this.orientation = rotateDegress
-        }
+    fun withVideo(width: Int, height: Int, duration: Long, rotateDegress: Int) =apply {
+        this.width = width
+        this.height = height
+        this.duration = duration
+        this.orientation = rotateDegress
     }
 
-    fun withAudio(duration: Long) {
-        apply {
-            this.duration = duration
-        }
+    fun withAudio(duration: Long) =apply {
+        this.duration = duration
     }
 
     fun build(): ContentValues {

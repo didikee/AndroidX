@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
@@ -125,5 +126,16 @@ public final class FileUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
+     * @param v
+     * @return
+     */
+    public static String formatFileSize(long v) {
+        if (v < 1024) return v + " B";
+        int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
+        return String.format(Locale.US,"%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
     }
 }
