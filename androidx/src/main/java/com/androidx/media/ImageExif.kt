@@ -58,6 +58,26 @@ class ImageExif {
         return ""
     }
 
+    fun apertureFormat(): String {
+
+        return ""
+    }
+
+    fun focalLengthFormat(): String {
+        if (focalLength.contains("/")) {
+            try {
+                val split = focalLength.split("/")
+                if (split.size == 2) {
+                    val num = split[0].toFloat() / split[1].toFloat()
+                    return "${num} mm"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return ""
+    }
+
     class GPS {
         var latitude: String = "" //纬度
         var longitude: String = "" //经度
