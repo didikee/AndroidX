@@ -2,6 +2,8 @@ package com.androidx.tools
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.exifinterface.media.ExifInterface
 import com.androidx.media.ImageExif
 import com.androidx.media.ImageExif.GPS
@@ -27,7 +29,15 @@ class ExifInterfaceX : IExifInterface {
 
     override fun decodeExif(resolver: ContentResolver, uri: Uri): ImageExif? {
         try {
-            return decodeExif(resolver.openInputStream(uri)!!)
+            val requestUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Get location data using the Exifinterface library.
+                // Exception occurs if ACCESS_MEDIA_LOCATION permission isn't granted.
+                // 来自：https://developer.android.com/training/data-storage/shared/media?hl=zh-cn#media-location-permission
+                MediaStore.setRequireOriginal(uri)
+            } else {
+                uri
+            }
+            return decodeExif(resolver.openInputStream(requestUri)!!)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }
@@ -54,20 +64,20 @@ class ExifInterfaceX : IExifInterface {
         return null
     }
 
-    fun decodeExif(exifInterface: ExifInterface): ImageExif {
+    private fun decodeExif(exifInterface: ExifInterface): ImageExif {
         val exif = ImageExif()
         val gps = GPS()
         exif.orientation = parseInt(exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION), 0)
         exif.dateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME) ?: ""
-        exif.make = exifInterface.getAttribute(ExifInterface.TAG_MAKE)  ?: ""
-        exif.model = exifInterface.getAttribute(ExifInterface.TAG_MODEL)  ?: ""
-        exif.flash = exifInterface.getAttribute(ExifInterface.TAG_FLASH)  ?: ""
-        exif.flashEnergy = exifInterface.getAttribute(ExifInterface.TAG_FLASH_ENERGY)  ?: ""
+        exif.make = exifInterface.getAttribute(ExifInterface.TAG_MAKE) ?: ""
+        exif.model = exifInterface.getAttribute(ExifInterface.TAG_MODEL) ?: ""
+        exif.flash = exifInterface.getAttribute(ExifInterface.TAG_FLASH) ?: ""
+        exif.flashEnergy = exifInterface.getAttribute(ExifInterface.TAG_FLASH_ENERGY) ?: ""
         exif.imageLength = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH), 0)
         exif.imageWidth = parseInt(exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH), 0)
         //gps 从androidQ开始需要声明权限才能获取到
         // 参考：https://github.com/expo/expo/issues/17399
-        gps.latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)  ?: ""
+        gps.latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE) ?: ""
         gps.longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE) ?: ""
         gps.latitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF) ?: ""
         gps.longitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF) ?: ""
@@ -80,10 +90,13 @@ class ExifInterfaceX : IExifInterface {
         exif.isoSpeed = exifInterface.getAttribute(ExifInterface.TAG_ISO_SPEED) ?: ""
         exif.isoSpeedRatings =
             exifInterface.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY) ?: ""
-        exif.dateTimeDigitized = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED) ?: ""
+        exif.dateTimeDigitized =
+            exifInterface.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED) ?: ""
         exif.subSecTime = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME) ?: ""
-        exif.subSecTimeOrig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_ORIGINAL) ?: ""
-        exif.subSecTimeDig = exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_DIGITIZED) ?: ""
+        exif.subSecTimeOrig =
+            exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_ORIGINAL) ?: ""
+        exif.subSecTimeDig =
+            exifInterface.getAttribute(ExifInterface.TAG_SUBSEC_TIME_DIGITIZED) ?: ""
         exif.whiteBalance = exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE) ?: ""
         exif.focalLength = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
         exif.processingMethod =
