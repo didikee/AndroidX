@@ -44,9 +44,20 @@ import androidx.annotation.WorkerThread;
  * 文件: Document,Download
  */
 public final class AndroidStorage {
-    public static final Uri EXTERNAL_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-    public static final Uri EXTERNAL_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-    public static final Uri EXTERNAL_AUDIO_URI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+    @Deprecated
+    // 当读取的时候就读取所有卷的数据，但是储存的时候只能往主要卷存数据
+    public static final Uri EXTERNAL_IMAGE_URI = isAboveVersionQ() ?
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    @Deprecated
+    public static final Uri EXTERNAL_VIDEO_URI = isAboveVersionQ() ?
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            : MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+    @Deprecated
+    public static final Uri EXTERNAL_AUDIO_URI = isAboveVersionQ() ?
+            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
     public static final Uri EXTERNAL_DOWNLOAD_URI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ?
             MediaStore.Downloads.EXTERNAL_CONTENT_URI : Uri.parse("");
     private static final ArrayList<String> STANDARD_DIRECTORIES = new ArrayList<>();
@@ -133,7 +144,7 @@ public final class AndroidStorage {
                                 int rotate) {
         ContentValues contentValues = createImageContentValues(folderPath, filename, ""/*自动处理*/,
                 width, height, rotate, 0);
-        return save(resolver, contentValues, inputStream, EXTERNAL_IMAGE_URI);
+        return save(resolver, contentValues, inputStream, MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI());
     }
 
     public static Uri saveImage(ContentResolver resolver,
@@ -146,12 +157,12 @@ public final class AndroidStorage {
                                 long fileLength) {
         ContentValues contentValues = createImageContentValues(folderPath, filename, ""/*自动处理*/,
                 width, height, rotate, Math.max(0, fileLength));
-        return save(resolver, contentValues, inputStream, EXTERNAL_IMAGE_URI);
+        return save(resolver, contentValues, inputStream, MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI());
     }
 
     @Nullable
     public static Uri saveImage(ContentResolver resolver, ContentValues contentValues, ContentTransfer<?> contentTransfer) {
-        Uri insertUri = resolver.insert(EXTERNAL_IMAGE_URI, contentValues);
+        Uri insertUri = resolver.insert(MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI(), contentValues);
         OutputStream outputStream = null;
         try {
             outputStream = resolver.openOutputStream(insertUri);
@@ -178,7 +189,7 @@ public final class AndroidStorage {
                                 String filename
     ) {
         ContentValues contentValues = createAudioContentValues(folderPath, filename, ""/*自动处理*/, 0, 0);
-        return save(resolver, contentValues, inputStream, EXTERNAL_AUDIO_URI);
+        return save(resolver, contentValues, inputStream, MediaStoreUtils.INSTANCE.getEXTERNAL_AUDIO_PRIMARY_URI());
     }
 
     public static Uri saveVideo(ContentResolver resolver,
@@ -193,7 +204,7 @@ public final class AndroidStorage {
     ) {
         ContentValues contentValues = createVideoContentValues(folderPath, filename, ""/*自动处理*/,
                 width, height, rotate, duration, fileLength);
-        return save(resolver, contentValues, inputStream, EXTERNAL_VIDEO_URI);
+        return save(resolver, contentValues, inputStream, MediaStoreUtils.INSTANCE.getEXTERNAL_VIDEO_PRIMARY_URI());
     }
 
     /**

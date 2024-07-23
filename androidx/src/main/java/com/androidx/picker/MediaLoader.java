@@ -22,7 +22,7 @@ import androidx.annotation.RequiresApi;
 /**
  * user author: didikee
  * create time: 5/26/21 4:17 下午
- * description: 
+ * description:
  */
 public class MediaLoader {
     // 排序，根据添加日期排序
@@ -187,7 +187,7 @@ public class MediaLoader {
     }
 
     protected boolean isTargetFolder(@Nullable String data, @Nullable String relativePath, @Nullable String folderPath) {
-        if (TextUtils.isEmpty(folderPath)){
+        if (TextUtils.isEmpty(folderPath)) {
             return true;
         }
         // 文件夹过滤
@@ -196,7 +196,7 @@ public class MediaLoader {
             return true;
         }
         // android10:DCIM/VideoMusicEditor/adb.mp4
-        if (relativePath != null && relativePath.length() > 0  && relativePath.startsWith(folderPath)) {
+        if (relativePath != null && relativePath.length() > 0 && relativePath.startsWith(folderPath)) {
             return true;
         }
         return false;
@@ -247,6 +247,11 @@ public class MediaLoader {
         }
 
         public Builder ofImage() {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+//                this.contentUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+//            }else {
+//                this.contentUri = AndroidStorage.EXTERNAL_IMAGE_URI;
+//            }
             this.contentUri = AndroidStorage.EXTERNAL_IMAGE_URI;
             return this;
         }
@@ -283,6 +288,7 @@ public class MediaLoader {
 
         /**
          * 以文件夹的形式获得所有的媒体文件
+         *
          * @return
          */
         public ArrayList<MediaFolder> getFolders(@Nullable String defaultFolderName) {
@@ -302,6 +308,7 @@ public class MediaLoader {
 
         /**
          * 获取所有的媒体文件，以uri的形式
+         *
          * @return
          */
         public ArrayList<Uri> getUris() {
@@ -397,6 +404,7 @@ public class MediaLoader {
         public MediaFolder handle(@NonNull Cursor cursor, @NonNull ArrayList<String> projections, @NonNull Uri uri,
                                   String displayName, String mimeType, long size, long dateAdded, long dateModified,
                                   String data, String relativePath) {
+            // LogUtils.d("uri:" + uri + ", displayName: " + displayName + ", mimeType: " + mimeType + ", size: " + size + ", dateAdded: " + dateAdded + ", dateModified: " + dateModified + ", data: " + data + ", relativePath: " + relativePath);
             MediaItem mediaItem = mediaItemDataHandler.handle(cursor, projections, uri, displayName,
                     mimeType, size, dateAdded, dateModified, data, relativePath);
             // 获取父目录的信息,用于文件夹分类

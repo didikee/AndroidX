@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import com.androidx.MediaStoreUtils;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -23,7 +25,7 @@ public class SaveHelper {
      * @return
      */
     public static Uri saveImage(ContentResolver contentResolver, ContentValues contentValues, byte[] bytes) {
-        Uri externalContentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        Uri externalContentUri = MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI();
         Uri uri = contentResolver.insert(externalContentUri, contentValues);
         if (uri == null) {
             return null;

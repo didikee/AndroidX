@@ -77,7 +77,7 @@ public final class StorageSaveUtils {
         } else {
             contentValues.put(MediaStore.MediaColumns.DATA, getDataPath(folderPath, fileName));
         }
-        Uri destUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        Uri destUri = contentResolver.insert(MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI(), contentValues);
         OutputStream outputStream = null;
         try {
             if (destUri != null) {
@@ -153,11 +153,11 @@ public final class StorageSaveUtils {
 
         Uri destUri;
         if (MimeType.isImage(mimeType)) {
-            destUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            destUri = contentResolver.insert(MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_PRIMARY_URI(), contentValues);
         } else if (MimeType.isVideo(mimeType)) {
-            destUri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues);
+            destUri = contentResolver.insert(MediaStoreUtils.INSTANCE.getEXTERNAL_VIDEO_PRIMARY_URI(), contentValues);
         } else if (MimeType.isAudio(mimeType)) {
-            destUri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
+            destUri = contentResolver.insert(MediaStoreUtils.INSTANCE.getEXTERNAL_AUDIO_PRIMARY_URI(), contentValues);
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 destUri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
