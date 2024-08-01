@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import com.androidx.AndroidUtils;
+import com.androidx.LogUtils;
 import com.androidx.R;
 
 import java.util.ArrayList;
@@ -46,6 +48,8 @@ public class ImageLoader extends AbsMediaLoader {
         if (contentResolver == null) {
             return null;
         }
+        final boolean isAndroid10 = AndroidUtils.isAndroid10();
+        final boolean externalStorageLegacy = AndroidUtils.isExternalStorageLegacy();
         Uri externalContentUri = getContentUri();
         String order = getOrder();
         String selection = getSelection();
@@ -58,8 +62,7 @@ public class ImageLoader extends AbsMediaLoader {
         projections.add(MediaStore.MediaColumns.MIME_TYPE);
         projections.add(MediaStore.MediaColumns.DATE_ADDED);
         projections.add(MediaStore.MediaColumns.DATE_MODIFIED);
-        if (Build.VERSION.SDK_INT >= 29/*android 10*/) {
-            boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+        if (isAndroid10) {
             if (externalStorageLegacy) {
                 projections.add(MediaStore.MediaColumns.DATA);
             } else {
@@ -72,6 +75,15 @@ public class ImageLoader extends AbsMediaLoader {
         }
         // 添加特定类型的参数
         addProjections(projections);
+        // 确定他们的index
+        final int index_ID = projections.indexOf(MediaStore.MediaColumns._ID);
+        final int index_DISPLAY_NAME = projections.indexOf(MediaStore.MediaColumns.DISPLAY_NAME);
+        final int index_SIZE = projections.indexOf(MediaStore.MediaColumns.SIZE);
+        final int index_MIME_TYPE = projections.indexOf(MediaStore.MediaColumns.MIME_TYPE);
+        final int index_DATE_ADDED = projections.indexOf(MediaStore.MediaColumns.DATE_ADDED);
+        final int index_DATE_MODIFIED = projections.indexOf(MediaStore.MediaColumns.DATE_MODIFIED);
+        final int index_DATA = projections.indexOf(MediaStore.MediaColumns.DATA);
+        final int index_RELATIVE_PATH = projections.indexOf(MediaStore.MediaColumns.RELATIVE_PATH);
 
         Cursor cursor = contentResolver.query(externalContentUri, projections.toArray(new String[projections.size()]), selection, selectionArgs, order);
         if (cursor == null) {
@@ -82,9 +94,9 @@ public class ImageLoader extends AbsMediaLoader {
         ArrayList<MediaItem> allMedias = new ArrayList<>();
         while (cursor.moveToNext()) {
             //查询数据
-            String id = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
-            String displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
-            String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+            String id = cursor.getString(index_ID);
+            String displayName = cursor.getString(index_DISPLAY_NAME);
+            String mimeType = cursor.getString(index_MIME_TYPE);
 
             // 现在全部改为uri来实现
             Uri uri = ContentUris.withAppendedId(externalContentUri, Long.parseLong(id));
@@ -93,15 +105,14 @@ public class ImageLoader extends AbsMediaLoader {
             }
             String data = "";
             String relativePath = "";
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+            if (isAndroid10) {
                 if (externalStorageLegacy) {
-                    data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+                    data = cursor.getString(index_DATA);
                 } else {
-                    relativePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH));
+                    relativePath = cursor.getString(index_RELATIVE_PATH);
                 }
             } else {
-                data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+                data = cursor.getString(index_DATA);
             }
             // 获取父目录的信息,用于文件夹分类
             String parentName = "";
@@ -119,9 +130,9 @@ public class ImageLoader extends AbsMediaLoader {
             }
             MediaItem mediaItem = new MediaItem(uri);
             // 这些是公用的参数
-            long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE));
-            long dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED));
-            long dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
+            long size = cursor.getLong(index_SIZE);
+            long dateAdded = cursor.getLong(index_DATE_ADDED);
+            long dateModified = cursor.getLong(index_DATE_MODIFIED);
 
             // 设置公共参数
             mediaItem.setDisplayName(displayName);
@@ -160,6 +171,7 @@ public class ImageLoader extends AbsMediaLoader {
             allImagesFolder.path = "";
             allImagesFolder.items = allMedias;
             mediaFolders.add(0, allImagesFolder);  //确保第一条是所有图片
+            LogUtils.d("all items: " + allMedias.size());
         }
         cursor.close();
         return mediaFolders;
@@ -168,6 +180,7 @@ public class ImageLoader extends AbsMediaLoader {
 
     /**
      * 判断是否为gif
+     *
      * @param displayName
      * @param mimeType
      * @return

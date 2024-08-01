@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import com.androidx.AndroidStorage;
+import com.androidx.AndroidUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -69,6 +70,8 @@ public class MediaLoader {
 
     @NonNull
     private <T> ArrayList<T> execute(DataHandler<T> dataHandler) {
+        final boolean isAndroid10 = AndroidUtils.isAndroid10();
+        final boolean externalStorageLegacy = AndroidUtils.isExternalStorageLegacy();
         // common projections
         ArrayList<String> projections = new ArrayList<>();
         projections.add(MediaStore.MediaColumns._ID);
@@ -77,8 +80,7 @@ public class MediaLoader {
         projections.add(MediaStore.MediaColumns.MIME_TYPE);
         projections.add(MediaStore.MediaColumns.DATE_ADDED);
         projections.add(MediaStore.MediaColumns.DATE_MODIFIED);
-        if (Build.VERSION.SDK_INT >= 29/*android 10*/) {
-            boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+        if (isAndroid10) {
             if (externalStorageLegacy) {
                 projections.add(MediaStore.MediaColumns.DATA);
             } else {
@@ -131,6 +133,7 @@ public class MediaLoader {
         if (cursor == null) {
             return new ArrayList<>();
         }
+
         while (cursor.moveToNext()) {
             // 这些是公用的参数
             String id = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
@@ -144,8 +147,7 @@ public class MediaLoader {
             }
             String data = "";
             String relativePath = "";
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+            if (isAndroid10) {
                 if (externalStorageLegacy) {
                     data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
                 } else {

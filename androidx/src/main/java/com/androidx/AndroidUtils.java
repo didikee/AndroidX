@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.WorkerThread;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -48,6 +50,17 @@ public final class AndroidUtils {
 
     public static boolean isAndroid10() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
+    /**
+     * 注意：该API相对耗时，请勿在循环中调用
+     * <p>
+     * 案例：ImageLoader中存在cosur中使用了该api，由于该api速度慢，5000张图片读取耗时500ms，但是在读图处理循环时调用了该方法，也就是循环5000次，耗时从之前的500ms提升至9000ms
+     *
+     * @return
+     */
+    public static boolean isExternalStorageLegacy() {
+        return isAndroid10() && Environment.isExternalStorageLegacy();
     }
 
     public static boolean hasPermissions(@NonNull Context context, @NonNull String... permissions) {
