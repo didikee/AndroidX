@@ -6,10 +6,8 @@ plugins {
 android {
     compileSdkVersion 34
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 34
-        versionCode 36
-        versionName "1.4.0"
         archivesBaseName = "androidx-$versionName"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
