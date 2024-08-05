@@ -88,3 +88,7 @@ lint/tmp/
 .idea/compiler.xml
 .idea/misc.xml
 .idea/misc.xml
+.idea/misc.xml
+.idea/migrations.xml
+.idea/kotlinc.xml
+.idea/deploymentTargetSelector.xml
