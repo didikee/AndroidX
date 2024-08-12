@@ -44,19 +44,10 @@ import androidx.annotation.WorkerThread;
  * 文件: Document,Download
  */
 public final class AndroidStorage {
-    @Deprecated
     // 当读取的时候就读取所有卷的数据，但是储存的时候只能往主要卷存数据
-    public static final Uri EXTERNAL_IMAGE_URI = isAboveVersionQ() ?
-            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-    @Deprecated
-    public static final Uri EXTERNAL_VIDEO_URI = isAboveVersionQ() ?
-            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            : MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-    @Deprecated
-    public static final Uri EXTERNAL_AUDIO_URI = isAboveVersionQ() ?
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+    public static final Uri EXTERNAL_IMAGE_URI = MediaStoreUtils.INSTANCE.getEXTERNAL_IMAGE_URI();
+    public static final Uri EXTERNAL_VIDEO_URI = MediaStoreUtils.INSTANCE.getEXTERNAL_VIDEO_URI();
+    public static final Uri EXTERNAL_AUDIO_URI = MediaStoreUtils.INSTANCE.getEXTERNAL_AUDIO_URI();
 
     public static final Uri EXTERNAL_DOWNLOAD_URI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ?
             MediaStore.Downloads.EXTERNAL_CONTENT_URI : Uri.parse("");

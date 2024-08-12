@@ -28,6 +28,8 @@ import androidx.annotation.RequiresApi;
 public class MediaLoader {
     // 排序，根据添加日期排序
     public static final String ORDER_DATE_ADDED_DESC = MediaStore.MediaColumns.DATE_ADDED + " DESC";
+    // 排序，根据最后修改的日期排序（从新到旧）
+    public static final String ORDER_DATE_MODIFIED_DESC = MediaStore.MediaColumns.DATE_MODIFIED + " DESC";
     private final @NonNull
     ContentResolver contentResolver;
     @Nullable
@@ -111,11 +113,11 @@ public class MediaLoader {
         } else if (AndroidStorage.EXTERNAL_VIDEO_URI.toString().equals(externalContentUri.toString())) {
             allExtraProjections.add(MediaStore.MediaColumns.WIDTH);
             allExtraProjections.add(MediaStore.MediaColumns.HEIGHT);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (isAndroid10) {
                 allExtraProjections.add(MediaStore.Video.Media.DURATION);
             }
         } else if (AndroidStorage.EXTERNAL_AUDIO_URI.toString().equals(externalContentUri.toString())) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (isAndroid10) {
                 allExtraProjections.add(MediaStore.Audio.Media.DURATION);
             }
         } else {
@@ -207,7 +209,7 @@ public class MediaLoader {
     public static class Builder {
         ContentResolver resolver;
         Uri contentUri;
-        String order;
+        String order = ORDER_DATE_MODIFIED_DESC; // 默认按照时间排序，最近的媒体在最前面，符合90%的使用场景
         String selection;
         String[] selectionArgs;
         String[] extraProjections;
