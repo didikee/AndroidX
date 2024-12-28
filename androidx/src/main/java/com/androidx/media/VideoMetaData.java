@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 /**
  * user author: didikee
  * create time: 1/14/19 6:25 PM
- * description: 
+ * description:
  */
 public final class VideoMetaData implements Parcelable {
     //file info
@@ -164,7 +164,7 @@ public final class VideoMetaData implements Parcelable {
         this.size = size;
     }
 
-    public int[] getRealSize() {
+    public Resolution getRealSize() {
         // 获取真实的宽高
         int realWidth = width;
         int realHeight = height;
@@ -173,7 +173,7 @@ public final class VideoMetaData implements Parcelable {
             realHeight = realWidth ^ realHeight;
             realWidth = realWidth ^ realHeight;
         }
-        return new int[]{realWidth, realHeight};
+        return new Resolution(realWidth, realHeight);
     }
 
     @NonNull
@@ -222,6 +222,7 @@ public final class VideoMetaData implements Parcelable {
 
     /**
      * 当这些信息是有的表示该视频信息合规
+     *
      * @return true：视频信息正确
      */
     public boolean isValid() {

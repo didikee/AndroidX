@@ -562,8 +562,8 @@ public final class AndroidStorage {
         try {
             return AndroidStorage.saveVideo(resolver,
                     new FileInputStream(videoFile), folderPath, filename,
-                    videoMetaData.getWidth(), videoMetaData.getHeight(), videoMetaData.getRotation(),
-                    videoMetaData.getDuration(), videoFile.length());
+                    videoMetaData.width, videoMetaData.height, videoMetaData.rotation,
+                    videoMetaData.duration, videoFile.length());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
