@@ -92,3 +92,4 @@ lint/tmp/
 .idea/migrations.xml
 .idea/kotlinc.xml
 .idea/deploymentTargetSelector.xml
+.DS_Store

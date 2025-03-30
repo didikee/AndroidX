@@ -70,6 +70,18 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.height = height;
     }
 
+    public Resolution getRealSize() {
+        // 获取真实的宽高
+        int realWidth = width;
+        int realHeight = height;
+        if (rotate == 90 || rotate == 270) {
+            realWidth = realWidth ^ realHeight;
+            realHeight = realWidth ^ realHeight;
+            realWidth = realWidth ^ realHeight;
+        }
+        return new Resolution(realWidth, realHeight);
+    }
+
     @NonNull
     public String getData() {
         return TextUtils.isEmpty(data) ? "" : data;
