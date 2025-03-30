@@ -207,6 +207,7 @@ public final class AndroidStorage {
      * @param contentUri
      * @return
      */
+    @Nullable
     private static Uri save(ContentResolver resolver,
                             ContentValues contentValues,
                             InputStream inputStream,
@@ -221,8 +222,7 @@ public final class AndroidStorage {
             outputStream = resolver.openOutputStream(insertUri);
             long transfer = IOUtils.transfer2(inputStream, outputStream);
             if (transfer > 0) {
-                updateUriFileLength(resolver, insertUri, contentValues, transfer);
-                clearPendingStates(resolver, insertUri, contentValues);
+                updateFileLengthAndClearPending(resolver, insertUri, contentValues, transfer);
                 return insertUri;
             } else {
                 delete(resolver, insertUri);
@@ -266,6 +266,27 @@ public final class AndroidStorage {
             resolver.update(uri, contentValues, null, null);
         }
     }
+
+    public static void updateFileLengthAndClearPending(ContentResolver resolver, Uri uri, ContentValues contentValues, long fileLength) {
+        Long asLong = contentValues.getAsLong(MediaStore.MediaColumns.SIZE);
+        long oldFileLength = asLong == null ? 0 : asLong.longValue();
+        boolean clearPending = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && contentValues.getAsBoolean(MediaStore.MediaColumns.IS_PENDING);
+        // 清除原始contentValues中的所有数据
+        contentValues.clear();
+        if (fileLength > 0 && oldFileLength != fileLength) {
+            contentValues.put(MediaStore.MediaColumns.SIZE, fileLength);
+        }
+        if (clearPending) {
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, false);
+        }
+        if (contentValues.size() > 0) {
+            resolver.update(uri, contentValues, null, null);
+        } else {
+            LogUtils.w("updateFileLengthAndClearPending cancel: fileLength == 0 or clearPending = false");
+        }
+
+    }
+
 
     /**
      * 删除uri
