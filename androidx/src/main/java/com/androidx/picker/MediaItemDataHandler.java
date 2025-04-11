@@ -5,9 +5,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+
+import com.androidx.AndroidUtils;
 
 /**
  * description:
@@ -23,6 +26,8 @@ public class MediaItemDataHandler implements DataHandler<MediaItem> {
         int width = 0;
         int height = 0;
         long duration = 0;
+        String xmp = "";
+        int osVersion = AndroidUtils.getOSVersion();
         for (String projection : projections) {
             switch (projection) {
                 case MediaStore.MediaColumns.WIDTH:
@@ -32,12 +37,21 @@ public class MediaItemDataHandler implements DataHandler<MediaItem> {
                     height = cursor.getInt(cursor.getColumnIndexOrThrow(projection));
                     break;
                 case MediaStore.MediaColumns.DURATION:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (osVersion >= Build.VERSION_CODES.Q) {
                         duration = cursor.getLong(cursor.getColumnIndexOrThrow(projection));
                     } else {
                         // 低于android q无法直接查询到时长
                     }
-                    break;
+                case "xmp": {
+                    if (osVersion >= 30) {
+                        byte[] xmpData = cursor.getBlob(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.XMP));
+                        if (xmpData != null && xmpData.length > 0) {
+                            // 将字节数组转换为字符串
+                            xmp = new String(xmpData, StandardCharsets.UTF_8);
+                        }
+                    }
+                }
+                break;
             }
         }
         MediaItem mediaItem = new MediaItem(uri);
@@ -53,6 +67,7 @@ public class MediaItemDataHandler implements DataHandler<MediaItem> {
         mediaItem.setWidth(width);
         mediaItem.setHeight(height);
         mediaItem.setDuration(duration);
+        mediaItem.setXmp(xmp);
         result.add(mediaItem);
         return mediaItem;
     }

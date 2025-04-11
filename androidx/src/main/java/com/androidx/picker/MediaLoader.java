@@ -101,15 +101,9 @@ public class MediaLoader {
         if (AndroidStorage.EXTERNAL_IMAGE_URI.toString().equals(externalContentUri.toString())) {
             allExtraProjections.add(MediaStore.MediaColumns.WIDTH);
             allExtraProjections.add(MediaStore.MediaColumns.HEIGHT);
-//            if (TextUtils.isEmpty(selection) && targetMimeTypes != null && targetMimeTypes.length > 0) {
-//                StringBuilder sb = new StringBuilder();
-//                for (int i = 0; i < targetMimeTypes.length; i++) {
-//                    sb.append(MediaStore.MediaColumns.MIME_TYPE + "=?");
-//                    if (i != targetMimeTypes.length - 1) {
-//                        sb.append(" OR ");
-//                    }
-//                }
-//            }
+            if (AndroidUtils.getOSVersion() >= 30) {
+                allExtraProjections.add(MediaStore.MediaColumns.XMP);
+            }
         } else if (AndroidStorage.EXTERNAL_VIDEO_URI.toString().equals(externalContentUri.toString())) {
             allExtraProjections.add(MediaStore.MediaColumns.WIDTH);
             allExtraProjections.add(MediaStore.MediaColumns.HEIGHT);
@@ -251,11 +245,6 @@ public class MediaLoader {
         }
 
         public Builder ofImage() {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-//                this.contentUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
-//            }else {
-//                this.contentUri = AndroidStorage.EXTERNAL_IMAGE_URI;
-//            }
             this.contentUri = AndroidStorage.EXTERNAL_IMAGE_URI;
             return this;
         }

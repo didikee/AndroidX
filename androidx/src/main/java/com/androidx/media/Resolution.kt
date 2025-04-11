@@ -11,7 +11,15 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class Resolution(val width: Int, val height: Int) : Parcelable {
 
-    fun getRealResolution(rotateDegress: Int) {
-        //TODO 获取真实的分辨率（宽高）
+    fun getRealResolution(rotate: Int): Resolution {
+        // 获取真实的宽高
+        var realWidth = width
+        var realHeight = height
+        if (rotate == 90 || rotate == 270) {
+            realWidth = realWidth xor realHeight
+            realHeight = realWidth xor realHeight
+            realWidth = realWidth xor realHeight
+        }
+        return Resolution(realWidth, realHeight)
     }
 }

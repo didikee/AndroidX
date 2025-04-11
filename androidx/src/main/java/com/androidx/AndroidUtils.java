@@ -52,6 +52,10 @@ public final class AndroidUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
+    public static int getOSVersion() {
+        return Build.VERSION.SDK_INT;
+    }
+
     /**
      * 注意：该API相对耗时，请勿在循环中调用
      * <p>

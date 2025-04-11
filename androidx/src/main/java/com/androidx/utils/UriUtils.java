@@ -12,6 +12,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import com.androidx.AndroidUtils;
 import com.androidx.CustomFileProvider;
 import com.androidx.LogUtils;
 import com.androidx.media.MagicBytes;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -32,7 +34,7 @@ import androidx.annotation.WorkerThread;
 /**
  * user author: didikee
  * create time: 2019-12-03 09:04
- * description: 
+ * description:
  */
 public final class UriUtils {
     public static final String DATE_TAKEN = "datetaken";
@@ -96,6 +98,7 @@ public final class UriUtils {
     /**
      * 获取多媒体文件的信息
      * 先根据媒体文件的类型去获取对应的信息
+     *
      * @param context
      * @param uri
      * @return
@@ -133,6 +136,7 @@ public final class UriUtils {
 
     /**
      * 获取文件的类型
+     *
      * @param context
      * @param uri
      * @return
@@ -215,6 +219,9 @@ public final class UriUtils {
             projections.add(MediaStore.Images.Media.WIDTH);
             projections.add(MediaStore.Images.Media.HEIGHT);
             projections.add(MediaStore.Images.Media.ORIENTATION);
+            if (AndroidUtils.getOSVersion() >= 30) {
+                projections.add(MediaStore.Images.Media.XMP);
+            }
             Cursor cursor = null;
             try {
                 cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
@@ -244,6 +251,20 @@ public final class UriUtils {
                         mediaUriInfo.setWidth(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)));
                         mediaUriInfo.setHeight(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)));
                         mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION)));
+
+                        if (AndroidUtils.getOSVersion() >= 30) {
+                            byte[] xmpData = cursor.getBlob(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.XMP));
+                            if (xmpData != null && xmpData.length > 0) {
+                                // 将字节数组转换为字符串
+                                String xmpString = new String(xmpData, StandardCharsets.UTF_8);
+                                mediaUriInfo.setXmp(xmpString);
+                            } else {
+                                mediaUriInfo.setXmp("");
+                            }
+                        } else {
+                            mediaUriInfo.setXmp("");
+                        }
+
                         return mediaUriInfo;
                     }
 
@@ -261,6 +282,7 @@ public final class UriUtils {
 
     /**
      * 旋转方向的字段在api29开始才加入，所以目前还是推荐通过媒体解析得到视频的基本媒体信息，文件信息的话倒是可以使用uri查询的形式
+     *
      * @param contentResolver
      * @param uri
      * @return
@@ -429,6 +451,7 @@ public final class UriUtils {
 
     /**
      * 获取基础的数据
+     *
      * @return
      */
     private static ArrayList<String> getCommonProjects() {
@@ -451,6 +474,7 @@ public final class UriUtils {
     /**
      * 调用第三方的视频播放器播放视频
      * 打开任意类的文件请使用
+     *
      * @param activity
      * @param videoUri
      * @return
@@ -478,6 +502,7 @@ public final class UriUtils {
 
     /**
      * 试图打开任意的uri
+     *
      * @param context
      * @param uri
      * @param mimeType
@@ -517,6 +542,7 @@ public final class UriUtils {
 
     /**
      * 获取视频的信息
+     *
      * @param context
      * @param videoUri
      * @return
@@ -534,6 +560,7 @@ public final class UriUtils {
 
     /**
      * 对旧版api设计的获取java file的绝对路径
+     *
      * @param context
      * @param uri
      * @return
@@ -557,6 +584,7 @@ public final class UriUtils {
 
     /**
      * 这个需要测试
+     *
      * @param context
      * @param file
      * @return
@@ -590,6 +618,7 @@ public final class UriUtils {
 
     /**
      * 从asset路径创建uri
+     *
      * @param assetPath file:///android_asset/${RELATIVEPATH}
      * @return
      */

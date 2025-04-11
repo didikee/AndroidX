@@ -28,6 +28,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
     private int rotate;
     // video & audio
     private long duration;
+    private String xmp;
 
     public MediaUriInfo() {
     }
@@ -160,6 +161,14 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.duration = duration;
     }
 
+    public String getXmp() {
+        return xmp;
+    }
+
+    public void setXmp(String xmp) {
+        this.xmp = xmp;
+    }
+
     @Override
     public String toString() {
         return "MediaUriInfo{" +
@@ -175,6 +184,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
                 ", height=" + height +
                 ", rotate=" + rotate +
                 ", duration=" + duration +
+                ", xmp=" + xmp +
                 '}';
     }
 
@@ -192,6 +202,7 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         dateTaken = in.readLong();
         duration = in.readLong();
         rotate = in.readInt();
+        xmp = in.readString();
     }
 
     public static final Creator<MediaUriInfo> CREATOR = new Creator<MediaUriInfo>() {
@@ -226,5 +237,6 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         dest.writeLong(dateTaken);
         dest.writeLong(duration);
         dest.writeInt(rotate);
+        dest.writeString(xmp);
     }
 }
