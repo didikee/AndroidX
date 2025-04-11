@@ -17,5 +17,6 @@ public interface DataHandler<T> {
              String data, String relativePath
     );
 
+    @NonNull
     ArrayList<T> getResult();
 }

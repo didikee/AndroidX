@@ -72,6 +72,7 @@ public class MediaItemDataHandler implements DataHandler<MediaItem> {
         return mediaItem;
     }
 
+    @NonNull
     @Override
     public ArrayList<MediaItem> getResult() {
         return result;
