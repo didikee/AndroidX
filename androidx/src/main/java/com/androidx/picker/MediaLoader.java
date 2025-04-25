@@ -102,7 +102,7 @@ public class MediaLoader {
             allExtraProjections.add(MediaStore.MediaColumns.WIDTH);
             allExtraProjections.add(MediaStore.MediaColumns.HEIGHT);
             if (AndroidUtils.getOSVersion() >= 30) {
-                allExtraProjections.add(MediaStore.MediaColumns.XMP);
+                allExtraProjections.add(MediaStore.Images.Media.XMP);
             }
         } else if (AndroidStorage.EXTERNAL_VIDEO_URI.toString().equals(externalContentUri.toString())) {
             allExtraProjections.add(MediaStore.MediaColumns.WIDTH);
@@ -167,7 +167,7 @@ public class MediaLoader {
 
             dataHandler.handle(cursor, allExtraProjections, uri, displayName, mimeType, size, dateAdded, dateModified, data, relativePath);
         }
-        return dataHandler.getResult();
+        return dataHandler.getDataResult();
     }
 
     private boolean contains(@Nullable String[] array, @Nullable String content) {

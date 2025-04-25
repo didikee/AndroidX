@@ -57,7 +57,7 @@ public class FolderDataHandler implements DataHandler<MediaFolder> {
 
     @NonNull
     @Override
-    public ArrayList<MediaFolder> getResult() {
+    public ArrayList<MediaFolder> getDataResult() {
         return result;
     }
 

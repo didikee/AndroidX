@@ -252,18 +252,18 @@ public final class UriUtils {
                         mediaUriInfo.setHeight(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)));
                         mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION)));
 
+                        String xmpString = "";
                         if (AndroidUtils.getOSVersion() >= 30) {
-                            byte[] xmpData = cursor.getBlob(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.XMP));
-                            if (xmpData != null && xmpData.length > 0) {
-                                // 将字节数组转换为字符串
-                                String xmpString = new String(xmpData, StandardCharsets.UTF_8);
-                                mediaUriInfo.setXmp(xmpString);
-                            } else {
-                                mediaUriInfo.setXmp("");
+                            int xmpIndex = cursor.getColumnIndex(MediaStore.Images.Media.XMP);
+                            if (xmpIndex != -1) {
+                                byte[] xmpData = cursor.getBlob(xmpIndex);
+                                if (xmpData != null && xmpData.length > 0) {
+                                    // 将字节数组转换为字符串
+                                    xmpString = new String(xmpData, StandardCharsets.UTF_8);
+                                }
                             }
-                        } else {
-                            mediaUriInfo.setXmp("");
                         }
+                        mediaUriInfo.setXmp(xmpString);
 
                         return mediaUriInfo;
                     }
@@ -565,10 +565,11 @@ public final class UriUtils {
      * @param uri
      * @return
      */
+    @Nullable
     public static String getPathFromUri(Context context, Uri uri) {
         //得到uri，后面就是将uri转化成file的过程
         if (context == null || uri == null) {
-            return null;
+            return "";
         }
         String pathFromUri;
         int sdkInt = Build.VERSION.SDK_INT;

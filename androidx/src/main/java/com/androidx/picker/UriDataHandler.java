@@ -20,7 +20,7 @@ public class UriDataHandler implements DataHandler<Uri> {
     }
 
     @Override
-    public ArrayList<Uri> getResult() {
+    public ArrayList<Uri> getDataResult() {
         return result;
     }
 }

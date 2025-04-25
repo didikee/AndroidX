@@ -56,40 +56,41 @@ internal object MediaMetadataHelper {
     fun getVideoMetaData(context: Context, videoUri: Uri): VideoMetaData {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             val pathFromUri = UriUtils.getPathFromUri(context, videoUri)
-            val file = File(pathFromUri)
-            return getVideoMetaData(file)
+            if (!TextUtils.isEmpty(pathFromUri)) {
+                val file = File(pathFromUri)
+                if (file.exists() && file.length() > 0) {
+                    return getVideoMetaData(file)
+                }
+            }
+            return getVideoMetaDataForUri(context, videoUri) // fallback
+        } else {
+            return getVideoMetaDataForUri(context, videoUri)
         }
-        return getVideoMetaDataForUri(context.contentResolver, videoUri)
     }
 
-    private fun getVideoMetaDataForUri(resolver: ContentResolver, videoUri: Uri): VideoMetaData {
+    private fun getVideoMetaDataForUri(context: Context, videoUri: Uri): VideoMetaData {
         val metaData = VideoMetaData()
-        val baseInfo = UriUtils.getBaseInfo(resolver, videoUri)
-        if (baseInfo != null) {
-            metaData.size = baseInfo.size
-            metaData.displayName = baseInfo.displayName
-            metaData.data = baseInfo.data
-            metaData.dateModified = baseInfo.dateModified
-            metaData.relativePath = baseInfo.relativePath
+        val baseInfo = UriUtils.getBaseInfo(context.contentResolver, videoUri)
+        baseInfo?.let {
+            metaData.size = it.size
+            metaData.displayName = it.displayName
+            metaData.data = it.data
+            metaData.dateModified = it.dateModified
+            metaData.relativePath = it.relativePath
         }
-        val fileDescriptor =
-            UriUtils.getFileDescriptor(resolver, videoUri, false)
-                ?: return metaData
-        var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
-            mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(fileDescriptor)
-            fillDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData)
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        } finally {
-            IOUtils.close(mediaMetadataRetriever)
+            MediaMetadataRetriever().use { retriever ->
+                retriever.setDataSource(context, videoUri)
+                fillDataFromMediaMetadataRetriever(retriever, metaData)
+            }
+        } catch (e: Exception) {
+            LogUtils.e("MediaMetadataRetriever error: ${e.message}")
         }
 
         var mediaExtractor: MediaExtractor? = null
         try {
             mediaExtractor = MediaExtractor()
-            mediaExtractor.setDataSource(fileDescriptor)
+            mediaExtractor.setDataSource(context, videoUri, null)
             fillDataFromMediaExtractor(mediaExtractor, metaData)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -178,7 +179,7 @@ internal object MediaMetadataHelper {
         var audioDuration = 0.0
         for (i in 0 until numTracks) {
             val format = extractor.getTrackFormat(i)
-            val mime = format.getString(MediaFormat.KEY_MIME)
+            val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
             var bitRate = 0
             var sampleRate = 0
             var channelCount = 0
@@ -194,7 +195,7 @@ internal object MediaMetadataHelper {
             }
             LogUtils.d("Mime: $mime sampleRate: $sampleRate channelCount: $channelCount")
 
-            if (mime!!.startsWith("audio/")) {
+            if (mime.startsWith("audio/")) {
                 if (format.containsKey(MediaFormat.KEY_DURATION)) {
                     audioDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
                 }
@@ -257,7 +258,7 @@ internal object MediaMetadataHelper {
         } /*end*/
         metaData.audioBitrate = audioBitrate
         val fileSize = metaData.size
-        if (fileSize > 0) {
+        if (fileSize > 0 && videoDuration > 0) {
             val fileBitrate = (fileSize * 8.0 / videoDuration)
             LogUtils.d("getVideoInfo file bitrate: $fileBitrate/bps")
             videoBitrate = (fileSize - audioSize) * 8.0 / videoDuration

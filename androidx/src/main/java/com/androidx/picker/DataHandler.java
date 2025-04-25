@@ -18,5 +18,5 @@ public interface DataHandler<T> {
     );
 
     @NonNull
-    ArrayList<T> getResult();
+    ArrayList<T> getDataResult();
 }
