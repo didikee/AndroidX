@@ -11,6 +11,11 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class Resolution(val width: Int, val height: Int) : Parcelable {
 
+    // 宽高都要大于0，那么这个媒体资源才是有效的，否则应该某个环节出了问题
+    fun isValid(): Boolean {
+        return width * height > 0
+    }
+
     fun getRealResolution(rotate: Int): Resolution {
         // 获取真实的宽高
         var realWidth = width
@@ -21,5 +26,11 @@ class Resolution(val width: Int, val height: Int) : Parcelable {
             realWidth = realWidth xor realHeight
         }
         return Resolution(realWidth, realHeight)
+    }
+
+    companion object {
+        fun error(): Resolution {
+            return Resolution(0, 0)
+        }
     }
 }

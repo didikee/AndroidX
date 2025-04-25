@@ -241,6 +241,15 @@ object AndroidStorage {
         return save(resolver, contentValues, inputStream, EXTERNAL_VIDEO_PRIMARY_URI)
     }
 
+    fun saveTo(
+        resolver: ContentResolver?,
+        contentValues: ContentValues?,
+        inputStream: InputStream?,
+        contentUri: Uri?
+    ): Uri? {
+        return save(resolver, contentValues, inputStream, contentUri)
+    }
+
     /**
      * 保存音频，文件等
      *
@@ -681,14 +690,16 @@ object AndroidStorage {
 //        if (TextUtils.isEmpty(mimeType)) {
 //            mimeType = MimeType.JPEG;
 //        }
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(imageFile.absolutePath, options)
         val width = options.outWidth
         val height = options.outHeight
 
         val imageDegree = MediaUtils.getImageDegree(imageFile.absolutePath)
 
-        BitmapFactory.decodeFile(imageFile.absolutePath, options)
+
         try {
             return saveImage(
                 resolver,
@@ -806,5 +817,29 @@ object AndroidStorage {
             }
         }
         return null
+    }
+
+    @WorkerThread
+    @JvmStatic
+    fun saveBitmapToFile(
+        bitmap: Bitmap,
+        outputFile: File,
+        format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,
+        quality: Int = 100
+    ): Boolean {
+        if (outputFile.exists()) {
+            outputFile.delete()
+        }
+        var outputStream: FileOutputStream? = null
+        try {
+            outputStream = FileOutputStream(outputFile)
+            bitmap.compress(format, quality, outputStream)
+            return true
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        } finally {
+            IOUtils.close(outputStream)
+        }
+        return false
     }
 }

@@ -52,6 +52,11 @@ public final class AndroidUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
+    public static boolean isAndroidQ() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
+
     public static int getOSVersion() {
         return Build.VERSION.SDK_INT;
     }
