@@ -40,6 +40,7 @@ public final class UriUtils {
     public static final String DATE_TAKEN = "datetaken";
     public static final Uri EXTERNAL_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     public static final Uri EXTERNAL_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+    public static final String ASSET_PREFIX = "file:///android_asset/";
 
     private UriUtils() {
     }
@@ -627,6 +628,11 @@ public final class UriUtils {
         if (TextUtils.isEmpty(assetPath)) {
             assetPath = "";/*avoid exception*/
         }
-        return Uri.parse("file:///android_asset/" + assetPath);
+        return Uri.parse(ASSET_PREFIX + assetPath);
+    }
+
+
+    public static String createAssetsPath(String assetPath) {
+        return ASSET_PREFIX + assetPath;
     }
 }

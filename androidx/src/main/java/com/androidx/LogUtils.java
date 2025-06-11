@@ -7,12 +7,12 @@ import android.util.Log;
 /**
  * user author: didikee
  * create time: 2019-07-18 13:25
- * description: 
+ * description:
  */
 public class LogUtils {
     private static final String TAG = "AndroidX";
     private static boolean DEBUG = true;
-    
+
     public static void setDebug(boolean debug){
         DEBUG = debug;
     }

@@ -10,9 +10,10 @@ import androidx.annotation.NonNull;
 /**
  * user author: didikee
  * create time: 2019-12-03 09:15
- * description: 
+ * description:
  */
-public class MediaUriInfo extends BaseUriInfo implements Parcelable {
+public class MediaUriInfo implements Parcelable {
+    private long id;
     private String displayName;
     private String mimeType;
     @Deprecated
@@ -37,6 +38,43 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
         this.mimeType = mimeType;
         this.width = width;
         this.height = height;
+    }
+
+    protected MediaUriInfo(Parcel in) {
+        id = in.readLong();
+        displayName = in.readString();
+        mimeType = in.readString();
+        data = in.readString();
+        relativePath = in.readString();
+        size = in.readLong();
+        dateAdded = in.readLong();
+        dateModified = in.readLong();
+        dateTaken = in.readLong();
+        width = in.readInt();
+        height = in.readInt();
+        rotate = in.readInt();
+        duration = in.readLong();
+        xmp = in.readString();
+    }
+
+    public static final Creator<MediaUriInfo> CREATOR = new Creator<MediaUriInfo>() {
+        @Override
+        public MediaUriInfo createFromParcel(Parcel in) {
+            return new MediaUriInfo(in);
+        }
+
+        @Override
+        public MediaUriInfo[] newArray(int size) {
+            return new MediaUriInfo[size];
+        }
+    };
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getDisplayName() {
@@ -170,73 +208,25 @@ public class MediaUriInfo extends BaseUriInfo implements Parcelable {
     }
 
     @Override
-    public String toString() {
-        return "MediaUriInfo{" +
-                "displayName='" + displayName + '\'' +
-                ", mimeType='" + mimeType + '\'' +
-                ", data='" + data + '\'' +
-                ", relativePath='" + relativePath + '\'' +
-                ", size=" + size +
-                ", dateAdded=" + dateAdded +
-                ", dateModified=" + dateModified +
-                ", dateTaken=" + dateTaken +
-                ", width=" + width +
-                ", height=" + height +
-                ", rotate=" + rotate +
-                ", duration=" + duration +
-                ", xmp=" + xmp +
-                '}';
-    }
-
-    public MediaUriInfo(Parcel in) {
-        super(in);
-        displayName = in.readString();
-        mimeType = in.readString();
-        width = in.readInt();
-        height = in.readInt();
-        data = in.readString();
-        relativePath = in.readString();
-        size = in.readLong();
-        dateAdded = in.readLong();
-        dateModified = in.readLong();
-        dateTaken = in.readLong();
-        duration = in.readLong();
-        rotate = in.readInt();
-        xmp = in.readString();
-    }
-
-    public static final Creator<MediaUriInfo> CREATOR = new Creator<MediaUriInfo>() {
-        @Override
-        public MediaUriInfo createFromParcel(Parcel in) {
-            return new MediaUriInfo(in);
-        }
-
-        @Override
-        public MediaUriInfo[] newArray(int size) {
-            return new MediaUriInfo[size];
-        }
-    };
-
-    @Override
     public int describeContents() {
         return 0;
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeLong(id);
         dest.writeString(displayName);
         dest.writeString(mimeType);
-        dest.writeInt(width);
-        dest.writeInt(height);
         dest.writeString(data);
         dest.writeString(relativePath);
         dest.writeLong(size);
         dest.writeLong(dateAdded);
         dest.writeLong(dateModified);
         dest.writeLong(dateTaken);
-        dest.writeLong(duration);
+        dest.writeInt(width);
+        dest.writeInt(height);
         dest.writeInt(rotate);
+        dest.writeLong(duration);
         dest.writeString(xmp);
     }
 }
