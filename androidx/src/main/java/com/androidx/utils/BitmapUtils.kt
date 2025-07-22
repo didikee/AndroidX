@@ -1,6 +1,8 @@
 package com.androidx.utils
 
 import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 
@@ -26,6 +28,20 @@ object BitmapUtils {
             }
         }
         return 0
+    }
+
+
+    /**
+     * 旋转bitmap
+     *
+     * @param source 原图
+     * @param angle  角度
+     * @return 旋转后的图片
+     */
+    fun rotateBitmap(source: Bitmap, angle: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(angle)
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
 
 }

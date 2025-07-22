@@ -1,18 +1,20 @@
 package com.androidx.utils
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.RectF
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.DisplayMetrics
-import android.util.Pair
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.DimenRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.DrawableCompat
 import com.androidx.media.Resolution
 import kotlin.math.max
 
@@ -108,6 +110,12 @@ object UiUtil {
      */
     fun getDip(res: Resources, @DimenRes dimenResId: Int): Int {
         return res.getDimensionPixelSize(dimenResId)
+    }
+
+    fun tintDrawable(drawable: Drawable, colors: ColorStateList): Drawable {
+        val wrappedDrawable = DrawableCompat.wrap(drawable)
+        DrawableCompat.setTintList(wrappedDrawable, colors)
+        return wrappedDrawable
     }
 
     // 计算grid布局的每行item个数

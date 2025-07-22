@@ -2,6 +2,7 @@ package com.androidx.media
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 /**
  * user author: didikee
@@ -9,7 +10,8 @@ import kotlinx.parcelize.Parcelize
  * description: 用于保存多媒体的宽高数据，便于阅读而已
  */
 @Parcelize
-class Resolution(val width: Int, val height: Int) : Parcelable {
+@Serializable
+data class Resolution(val width: Int, val height: Int) : Parcelable {
 
     // 宽高都要大于0，那么这个媒体资源才是有效的，否则应该某个环节出了问题
     fun isValid(): Boolean {

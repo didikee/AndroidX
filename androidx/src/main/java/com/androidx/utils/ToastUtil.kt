@@ -13,12 +13,8 @@ import android.widget.Toast
 object ToastUtil {
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    fun show(context: Context?, message: String?) {
-        show(context, message, Toast.LENGTH_SHORT)
-    }
-
-    fun showLong(context: Context?, message: String?) {
-        show(context, message, Toast.LENGTH_LONG)
+    fun show(context: Context?, message: String?, longToast: Boolean = false) {
+        show(context, message, if (longToast) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
     }
 
     fun show(context: Context?, message: String?, duration: Int) {
