@@ -29,23 +29,27 @@ object AndroidUtils {
     }
 
     @JvmStatic
-    val isAndroid14: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-
-    val isAndroid13: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-
-    @JvmStatic
-    val isAndroid10: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-
-    val isAndroidQ: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-
+    fun isAndroid14(): Boolean{
+        return  Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+    }
+    fun isAndroid13(): Boolean{
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    }
 
     @JvmStatic
-    val oSVersion: Int
-        get() = Build.VERSION.SDK_INT
+    fun isAndroid10(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    }
+
+    fun isAndroidQ(): Boolean{
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    }
+
+
+    @JvmStatic
+    fun getOSVersion(): Int{
+        return Build.VERSION.SDK_INT
+    }
 
     @JvmStatic
     val isExternalStorageLegacy: Boolean
@@ -57,7 +61,7 @@ object AndroidUtils {
          *
          * @return
          */
-        get() = isAndroid10 && Environment.isExternalStorageLegacy()
+        get() = isAndroid10() && Environment.isExternalStorageLegacy()
 
     @JvmStatic
     fun hasPermissions(context: Context, vararg permissions: String): Boolean {
@@ -150,7 +154,7 @@ object AndroidUtils {
      * @return
      */
     fun shouldShowVisualTips(context: Context, mediaType: ExpectMediaType): Boolean {
-        if (isAndroid14) {
+        if (isAndroid14()) {
             val mediaPermissions = getExpectPermissions(mediaType)
             val mediaPermissionsGranted = hasPermissions(context, *mediaPermissions)
             val visualPermissionGranted =
@@ -175,7 +179,7 @@ object AndroidUtils {
         context: Context,
         permissions: Array<String>
     ): Boolean {
-        if (isAndroid14) {
+        if (isAndroid14()) {
             val permissionList: MutableList<String> = permissions.toMutableList()
             // 检查是否包含 READ_MEDIA_VISUAL_USER_SELECTED 权限
             if (permissionList.contains(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)) {

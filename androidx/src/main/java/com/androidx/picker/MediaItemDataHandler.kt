@@ -23,7 +23,7 @@ class MediaItemDataHandler : DataHandler<MediaItem> {
         var height = 0
         var duration: Long = 0
         var xmp = ""
-        val osVersion = AndroidUtils.oSVersion
+        val osVersion = AndroidUtils.getOSVersion()
         for (projection in projections) {
             when (projection) {
                 MediaStore.MediaColumns.WIDTH -> width =
