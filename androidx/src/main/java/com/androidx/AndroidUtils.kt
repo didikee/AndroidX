@@ -30,10 +30,10 @@ object AndroidUtils {
 
     @JvmStatic
     fun isAndroid14(): Boolean{
-        return  Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        return  Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE // 34
     }
     fun isAndroid13(): Boolean{
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU // 33
     }
 
     @JvmStatic

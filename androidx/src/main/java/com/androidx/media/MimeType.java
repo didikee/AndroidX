@@ -29,6 +29,7 @@ public final class MimeType {
     public static final String WEBP = "image/webp";
     public static final String HEIC = "image/heic";
     public static final String HEIF = "image/heif";
+    public static final String AVIF = "image/avif";
     // video
     public static final String VIDEO = "video/*";
     public static final String MP4 = "video/mp4";
