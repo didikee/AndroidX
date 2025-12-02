@@ -4,7 +4,11 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
 import com.androidx.media.MediaUriInfo;
+
+import java.util.Objects;
 
 /**
  * user author: didikee
@@ -54,5 +58,21 @@ public class MediaItem extends MediaUriInfo implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
         dest.writeParcelable(uri, flags);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj instanceof MediaItem) {
+            return getSize() == ((MediaItem) obj).getSize()
+                    && getWidth() == ((MediaItem) obj).getWidth()
+                    && getHeight() == ((MediaItem) obj).getHeight()
+                    && getData().equals(((MediaItem) obj).getData())
+                    && getDateAdded() == ((MediaItem) obj).getDateAdded()
+                    && Objects.equals(getDisplayName(), ((MediaItem) obj).getDisplayName())
+                    && Objects.equals(getMimeType(), ((MediaItem) obj).getMimeType())
+                    && Objects.equals(getXmp(), ((MediaItem) obj).getXmp())
+                    ;
+        }
+        return false;
     }
 }
