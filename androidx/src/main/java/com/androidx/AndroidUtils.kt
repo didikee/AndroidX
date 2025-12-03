@@ -14,7 +14,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import java.util.Arrays
 
 /**
  * description:
@@ -29,10 +28,11 @@ object AndroidUtils {
     }
 
     @JvmStatic
-    fun isAndroid14(): Boolean{
-        return  Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE // 34
+    fun isAndroid14(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE // 34
     }
-    fun isAndroid13(): Boolean{
+
+    fun isAndroid13(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU // 33
     }
 
@@ -41,13 +41,13 @@ object AndroidUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     }
 
-    fun isAndroidQ(): Boolean{
+    fun isAndroidQ(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     }
 
 
     @JvmStatic
-    fun getOSVersion(): Int{
+    fun getOSVersion(): Int {
         return Build.VERSION.SDK_INT
     }
 
@@ -89,6 +89,12 @@ object AndroidUtils {
         }
 
         return true
+    }
+
+    // 原始的检查权限，不依赖第三方库
+    fun checkPermission(context: Context, permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(context, permission) ==
+                PackageManager.PERMISSION_GRANTED
     }
 
     // 是否应该显示权限解释对话框，如果返回true则表示之前拒绝过，FALSE 代表没有拒绝过
@@ -207,6 +213,30 @@ object AndroidUtils {
         } else {
             // 低于安卓14的版本
             return hasPermissions(context, *permissions)
+        }
+    }
+
+    fun hasReadVideoPermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkPermission(context, Manifest.permission.READ_MEDIA_VIDEO)
+        } else {
+            checkPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+    }
+
+    fun hasReadImagePermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkPermission(context, Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            checkPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+    }
+
+    fun hasReadAudioPermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkPermission(context, Manifest.permission.READ_MEDIA_AUDIO)
+        } else {
+            checkPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
         }
     }
 

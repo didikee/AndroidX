@@ -566,22 +566,14 @@ public final class UriUtils {
      * @param uri
      * @return
      */
-    @Nullable
+    @NonNull
     public static String getPathFromUri(Context context, Uri uri) {
         //得到uri，后面就是将uri转化成file的过程
         if (context == null || uri == null) {
             return "";
         }
-        String pathFromUri;
-        int sdkInt = Build.VERSION.SDK_INT;
-        if (sdkInt >= 19) {
-            pathFromUri = Uri2Path.getRealPathFromURI_API19(context, uri);
-        } else if (sdkInt >= 11 && sdkInt < 19) {
-            pathFromUri = Uri2Path.getRealPathFromURI_API11to18(context, uri);
-        } else {
-            pathFromUri = Uri2Path.getRealPathFromURI_BelowAPI11(context, uri);
-        }
-        return pathFromUri;
+        // 从19开始就用这个方法，sdk是从21开始的，所以下面的代码没有意义
+        return Uri2Path.getRealPathFromURI_API19(context, uri);
     }
 
     /**

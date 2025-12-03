@@ -173,4 +173,18 @@ object TimeUtils {
         }
     }
 
+    /**
+     * ffmpeg 支持的时间格式：HH:MM:SS.xxx
+     * @param millsSeconds
+     * @return
+     */
+    fun formatTimeForFfmpeg(millsSeconds: Long): String {
+        val seconds = millsSeconds / 1000
+        val mills = millsSeconds % 1000
+        val s = seconds % 60
+        val m = (seconds / 60) % 60
+        val h = (seconds / (60 * 60)) % 24
+        return String.format(Locale.ENGLISH, "%02d:%02d:%02d.%03d", h, m, s, mills)
+    }
+
 }

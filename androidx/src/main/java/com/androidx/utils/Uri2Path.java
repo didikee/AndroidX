@@ -31,49 +31,6 @@ final class Uri2Path {
         return getPathSDK19(context, uri);
     }
 
-    @SuppressLint("NewApi")
-    public static String getRealPathFromURI_API11to18(Context context, Uri contentUri) {
-        String[] proj = {MediaStore.Images.Media.DATA};
-        String result = null;
-        CursorLoader cursorLoader = new CursorLoader(
-                context,
-                contentUri, proj, null, null, null);
-        Cursor cursor = null;
-        try {
-            cursor = cursorLoader.loadInBackground();
-            if (cursor != null) {
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                result = cursor.getString(column_index);
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        return result;
-    }
-
-    public static String getRealPathFromURI_BelowAPI11(Context context, Uri contentUri) {
-        String[] proj = {MediaStore.Images.Media.DATA};
-        String result = null;
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            result = cursor.getString(column_index);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        return result;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private static String getPathSDK19(Context context, Uri uri) {
