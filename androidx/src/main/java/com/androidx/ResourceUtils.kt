@@ -2,6 +2,7 @@ package com.androidx
 
 import android.R
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.TypedValue
@@ -132,5 +133,15 @@ object ResourceUtils {
     fun tintMenuIconsRes(context: Context, @ColorRes colorRes: Int, menu: Menu) {
         val color = ContextCompat.getColor(context, colorRes)
         tintMenuIcons(color, menu)
+    }
+
+    fun tintDrawable(drawable: Drawable, @ColorInt color: Int): Drawable {
+        return tintDrawable(drawable,ColorStateList.valueOf(color))
+    }
+
+    fun tintDrawable(drawable: Drawable, colors: ColorStateList): Drawable {
+        val wrappedDrawable = DrawableCompat.wrap(drawable)
+        DrawableCompat.setTintList(wrappedDrawable, colors)
+        return wrappedDrawable
     }
 }
