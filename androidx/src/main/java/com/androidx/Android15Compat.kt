@@ -32,13 +32,15 @@ object Android15Compat {
 
     fun edgeWithRoot(
         layoutRoot: View,
+        bottomPadding: Int = -1
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(
             layoutRoot,
             OnApplyWindowInsetsListener { v, insets ->
                 val systemBars =
                     insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                val bp = if (bottomPadding >= 0) bottomPadding else systemBars.bottom
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, bp)
                 insets
             })
     }

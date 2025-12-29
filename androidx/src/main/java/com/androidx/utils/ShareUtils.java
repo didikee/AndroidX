@@ -27,6 +27,16 @@ public final class ShareUtils {
     private ShareUtils() {
     }
 
+    /**
+     * 分享媒体uri:可以时图片,视频,gif等.
+     *
+     * @param context    activity
+     * @param uri         uri,注意Android N 前后版本uri的差异,请先做好兼容处理
+     * @param mimeType    uri的媒体类型
+     * @param packageName 指定app分享,可以为空.但是不为空是如果指定的包名对应的app未安装则会分享失败
+     * @param title  分享标题,可以为空
+     * @return 是否分享成功
+     */
     public static void share(Context context, Uri uri, String mimeType, String packageName, String title) throws Exception {
         share(context, uri, mimeType, packageName, "", title);
     }
@@ -169,16 +179,7 @@ public final class ShareUtils {
         share(context, uri, mimeType, packageName, title);
     }
 
-    /**
-     * 分享媒体uri:可以时图片,视频,gif等.
-     *
-     * @param activity    activity
-     * @param uri         uri,注意Android N 前后版本uri的差异,请先做好兼容处理
-     * @param mimeType    uri的媒体类型
-     * @param packageName 指定app分享,可以为空.但是不为空是如果指定的包名对应的app未安装则会分享失败
-     * @param shareTitle  分享标题,可以为空
-     * @return 是否分享成功
-     */
+
     @Deprecated
     public static boolean share(Activity activity, Uri uri, String mimeType, String packageName, String shareTitle) {
         try {

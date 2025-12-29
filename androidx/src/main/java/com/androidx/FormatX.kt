@@ -13,4 +13,11 @@ object FormatX {
         val df = DecimalFormat("0.#") // 保留 1 位小数，如果是 0 则省略
         return df.format(value)
     }
+
+    fun formatFloat2(value: Float): String {
+        val df = DecimalFormat("0.##") // 保留 2 位小数，如果是 0 则省略
+        return df.format(value)
+    }
+
+
 }

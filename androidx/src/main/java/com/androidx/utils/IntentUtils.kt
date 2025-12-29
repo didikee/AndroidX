@@ -1,10 +1,12 @@
 package com.androidx.utils
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.text.TextUtils
+import com.androidx.LogUtils
 import com.androidx.media.MimeType
 
 /**
@@ -83,5 +85,16 @@ object IntentUtils {
             e.printStackTrace()
         }
         return false
+    }
+
+    fun navigateToMain(activity: Activity,mainActivityClz :Class<out Activity>?) {
+        mainActivityClz?.let {
+            val intent = Intent(activity, mainActivityClz)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            activity.startActivity(intent)
+        } ?: run {
+            // 未注册
+            LogUtils.e("navigateToMain MainActivity unregister")
+        }
     }
 }

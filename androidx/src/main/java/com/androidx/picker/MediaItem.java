@@ -6,6 +6,8 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import com.androidx.media.MediaStoreInfo;
+import com.androidx.media.MediaStoreItem;
 import com.androidx.media.MediaUriInfo;
 
 import java.util.Objects;
@@ -16,6 +18,7 @@ import java.util.Objects;
  * description:
  * Parcelable 的继承问题:
  * https://stackoverflow.com/questions/17725821/how-to-extend-android-class-which-implements-parcelable-interface
+ * 使用MediaStoreItem
  */
 public class MediaItem extends MediaUriInfo implements Parcelable {
     private Uri uri;
@@ -74,5 +77,24 @@ public class MediaItem extends MediaUriInfo implements Parcelable {
                     ;
         }
         return false;
+    }
+
+    public MediaStoreItem toNew() {
+        MediaStoreInfo uriInfo = new MediaStoreInfo();
+        uriInfo.setMimeType(getMimeType());
+        uriInfo.setWidth(getWidth());
+        uriInfo.setHeight(getHeight());
+        uriInfo.setData(getData());
+        uriInfo.setDateAdded(getDateAdded());
+        uriInfo.setDateModified(getDateModified());
+        uriInfo.setDateTaken(getDateTaken());
+        uriInfo.setDisplayName(getDisplayName());
+        uriInfo.setRelativePath(getRelativePath());
+        uriInfo.setId(getId());
+        uriInfo.setRotate(getRotate());
+        uriInfo.setSize(getSize());
+        uriInfo.setXmp(getXmp());
+        uriInfo.setDuration(getDuration());
+        return new MediaStoreItem(uri, uriInfo);
     }
 }

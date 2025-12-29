@@ -166,10 +166,13 @@ object AppUtils {
         //  intent.putExtra(Intent.EXTRA_EMAIL, email)，结果将匹配不到任何应用
         val uri = Uri.parse("mailto:$emailAddress")
         val emailArray = arrayOf(emailAddress)
-        val intent = Intent(Intent.ACTION_SENDTO, uri)
-        intent.putExtra(Intent.EXTRA_CC, emailArray) // 抄送人
-        intent.putExtra(Intent.EXTRA_SUBJECT, title)
-        intent.putExtra(Intent.EXTRA_TEXT, text)
+        val intent = Intent(Intent.ACTION_SENDTO, uri).apply {
+            putExtra(Intent.EXTRA_CC, emailArray) // 抄送人
+            putExtra(Intent.EXTRA_SUBJECT, title)
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
+
+
         try {
             context.startActivity(
                 Intent.createChooser(

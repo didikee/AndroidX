@@ -1,8 +1,9 @@
 package com.androidx
 
-import android.R
 import android.content.Context
 import android.content.res.ColorStateList
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.TypedValue
@@ -38,7 +39,7 @@ object ResourceUtils {
     }
 
     fun getSelectableItemBackgroundResId(context: Context): Int {
-        return getResourceId(context, R.attr.selectableItemBackground)
+        return getResourceId(context, android.R.attr.selectableItemBackground)
     }
 
     /**
@@ -62,7 +63,7 @@ object ResourceUtils {
 
     @JvmStatic
     fun getSelectableItemBackground(context: Context): Int {
-        return getAttrResourceId(context, R.attr.selectableItemBackground)
+        return getAttrResourceId(context, android.R.attr.selectableItemBackground)
     }
 
 
@@ -143,5 +144,10 @@ object ResourceUtils {
         val wrappedDrawable = DrawableCompat.wrap(drawable)
         DrawableCompat.setTintList(wrappedDrawable, colors)
         return wrappedDrawable
+    }
+
+    fun isDarkTheme(resources: Resources): Boolean {
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 }

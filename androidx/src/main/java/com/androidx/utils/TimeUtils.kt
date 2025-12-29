@@ -72,7 +72,7 @@ object TimeUtils {
      * 大于等于 1 小时：HH:MM:SS.s
      * 即：只保留一位小数秒数（精确到 100 毫秒）。
      */
-    fun formatTimeHHMMSSs(milliseconds: Long): String {
+    fun formatTimeHMSs(milliseconds: Long): String {
         val totalSeconds = milliseconds / 1000
         val tenths = (milliseconds % 1000) / 100  // 保留一位小数（0~9）
 

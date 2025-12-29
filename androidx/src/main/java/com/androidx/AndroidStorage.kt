@@ -603,11 +603,21 @@ object AndroidStorage {
      * @return .../{STANDARD_DIRECTORIES/customDir}/...
      */
     @JvmStatic
-    fun getFolderPath(standardDir: StandardDirectory, customDir: String?): String {
-        if (TextUtils.isEmpty(customDir)) {
-            return standardDir.directoryName
+    fun getFolderPath(
+        standardDir: StandardDirectory,
+        customDir: String?,
+        childDir: String = ""
+    ): String {
+        // 使用3级目录结构
+        if (childDir.isNotEmpty() && !TextUtils.isEmpty(customDir)) {
+            return standardDir.directoryName + File.separator + customDir + File.separator + childDir
         }
-        return standardDir.directoryName + File.separator + customDir
+        // 使用2级目录结构
+        if (!TextUtils.isEmpty(customDir)) {
+            return standardDir.directoryName + File.separator + customDir
+        }
+        // 使用1级目录结构
+        return standardDir.directoryName
     }
 
 

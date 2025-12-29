@@ -69,4 +69,12 @@ object FileX {
         return deletedSize
     }
 
+    // 是不是真的存在
+    fun realExists(file: File?):Boolean{
+        if (file == null){
+            return false
+        }
+        return file.exists() && file.length() > 0
+    }
+
 }

@@ -16,6 +16,7 @@ import com.androidx.AndroidUtils;
 import com.androidx.CustomFileProvider;
 import com.androidx.LogUtils;
 import com.androidx.media.MagicBytes;
+import com.androidx.media.MediaStoreInfo;
 import com.androidx.media.MediaUriInfo;
 import com.androidx.media.MimeType;
 import com.androidx.media.VideoMetaData;
@@ -450,6 +451,125 @@ public final class UriUtils {
         return null;
     }
 
+    public static MediaStoreInfo getAudioStoreInfo(ContentResolver contentResolver, Uri uri) {
+        if (contentResolver != null && uri != null) {
+            ArrayList<String> projections = getCommonProjects();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projections.add(UriUtils.DATE_TAKEN);
+            } else {
+                // android 10 开始才有
+                // do nothing
+            }
+            projections.add(MediaStore.Audio.Media.DURATION);
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.w("getAudioInfo get a empty cursor: " + uri.toString());
+                } else {
+
+                    if (cursor.moveToFirst()) {
+                        MediaStoreInfo mediaUriInfo = new MediaStoreInfo();
+                        mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
+                        mediaUriInfo.setDisplayName(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)));
+                        mediaUriInfo.setMimeType(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.setRelativePath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH)));
+                        } else {
+                            mediaUriInfo.setData(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)));
+                        }
+                        mediaUriInfo.setSize(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)));
+                        mediaUriInfo.setDateAdded(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED)));
+                        mediaUriInfo.setDateModified(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)));
+
+                        // custom
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
+                        } else {
+                            mediaUriInfo.setDateTaken(0/*低于android10的没有这个字段*/);
+                        }
+                        mediaUriInfo.setDuration(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)));
+                        return mediaUriInfo;
+                    }
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 旋转方向的字段在api29开始才加入，所以目前还是推荐通过媒体解析得到视频的基本媒体信息，文件信息的话倒是可以使用uri查询的形式
+     *
+     * @param contentResolver
+     * @param uri
+     * @return
+     */
+    public static MediaStoreInfo getVideoStoreInfo(ContentResolver contentResolver, Uri uri) {
+        if (contentResolver != null && uri != null) {
+            ArrayList<String> projections = getCommonProjects();
+
+            projections.add(MediaStore.Video.Media.DURATION);
+            projections.add(MediaStore.Video.Media.WIDTH);
+            projections.add(MediaStore.Video.Media.HEIGHT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projections.add(UriUtils.DATE_TAKEN);
+                //在sdk >= 29 后才加入了视频的方向api,所以先不取这个字段
+                projections.add(MediaStore.Video.Media.ORIENTATION);
+            } else {
+                projections.add(MediaStore.Video.Media.DATE_TAKEN);
+            }
+            Cursor cursor = null;
+            try {
+                cursor = contentResolver.query(uri, projections.toArray(new String[projections.size()]), null, null, null);
+                if (cursor == null) {
+                    LogUtils.e("getVideoInfo get a empty cursor: " + uri.toString());
+                } else {
+
+                    if (cursor.moveToFirst()) {
+                        MediaStoreInfo mediaUriInfo = new MediaStoreInfo();
+                        mediaUriInfo.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)));
+                        mediaUriInfo.setDisplayName(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)));
+                        mediaUriInfo.setMimeType(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.setRelativePath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH)));
+                        } else {
+                            mediaUriInfo.setData(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)));
+                        }
+                        mediaUriInfo.setSize(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)));
+                        mediaUriInfo.setDateAdded(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED)));
+                        mediaUriInfo.setDateModified(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)));
+
+                        // custom
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(UriUtils.DATE_TAKEN)));
+                            mediaUriInfo.setRotate(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.ORIENTATION)));
+                        } else {
+                            mediaUriInfo.setDateTaken(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_TAKEN)));
+                        }
+                        mediaUriInfo.setDuration(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
+                        mediaUriInfo.setWidth(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)));
+                        mediaUriInfo.setHeight(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)));
+                        return mediaUriInfo;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * 获取基础的数据
      *
@@ -613,14 +733,14 @@ public final class UriUtils {
     /**
      * 从asset路径创建uri
      *
-     * @param assetPath file:///android_asset/${RELATIVEPATH}
-     * @return
+     * @param assetRelativePath file:///android_asset/${RELATIVEPATH}
+     * @return 可以通过glide加载的uri
      */
-    public static Uri createUri(String assetPath) {
-        if (TextUtils.isEmpty(assetPath)) {
-            assetPath = "";/*avoid exception*/
+    public static Uri createUri(String assetRelativePath) {
+        if (TextUtils.isEmpty(assetRelativePath)) {
+            assetRelativePath = "";/*avoid exception*/
         }
-        return Uri.parse(ASSET_PREFIX + assetPath);
+        return Uri.parse(ASSET_PREFIX + assetRelativePath);
     }
 
 

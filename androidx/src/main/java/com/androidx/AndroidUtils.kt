@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -25,6 +26,10 @@ object AndroidUtils {
         val settingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         settingsIntent.setData(Uri.fromParts("package", packageName, null))
         return settingsIntent
+    }
+
+    fun isMainThread(): Boolean {
+        return Looper.myLooper() == Looper.getMainLooper()
     }
 
     @JvmStatic
@@ -64,7 +69,11 @@ object AndroidUtils {
         get() = isAndroid10() && Environment.isExternalStorageLegacy()
 
     @JvmStatic
-    fun hasPermissions(context: Context, vararg permissions: String): Boolean {
+    fun hasPermission(context: Context, permission: String): Boolean {
+        return checkPermission(context, permission)
+    }
+
+    fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
         if (permissions.size == 0) {
             LogUtils.w("hasPermissions check 0 permissions.")
             return true
@@ -162,9 +171,9 @@ object AndroidUtils {
     fun shouldShowVisualTips(context: Context, mediaType: ExpectMediaType): Boolean {
         if (isAndroid14()) {
             val mediaPermissions = getExpectPermissions(mediaType)
-            val mediaPermissionsGranted = hasPermissions(context, *mediaPermissions)
+            val mediaPermissionsGranted = hasPermissions(context, mediaPermissions)
             val visualPermissionGranted =
-                hasPermissions(context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                hasPermission(context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
             LogUtils.d("shouldShowVisualTips mediaPermissionsGranted: $mediaPermissionsGranted")
             LogUtils.d("shouldShowVisualTips visualPermissionGranted: $visualPermissionGranted")
             return !mediaPermissionsGranted && visualPermissionGranted
@@ -190,14 +199,14 @@ object AndroidUtils {
             // 检查是否包含 READ_MEDIA_VISUAL_USER_SELECTED 权限
             if (permissionList.contains(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)) {
                 val visualGranted =
-                    hasPermissions(context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                    hasPermission(context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
                 if (visualGranted) {
                     // 移除 READ_MEDIA_VIDEO 和 READ_MEDIA_IMAGES 权限
                     permissionList.remove(Manifest.permission.READ_MEDIA_VIDEO)
                     permissionList.remove(Manifest.permission.READ_MEDIA_IMAGES)
                     val leftPermissions = permissionList.toTypedArray()
                     return if (leftPermissions.size > 0) {
-                        hasPermissions(context, *leftPermissions)
+                        hasPermissions(context, leftPermissions)
                     } else {
                         true
                     }
@@ -205,14 +214,14 @@ object AndroidUtils {
                     // 移除 READ_MEDIA_VISUAL_USER_SELECTED 权限，看看其他权限是否是同意的
                     permissionList.remove(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
                     val leftPermissions = permissionList.toTypedArray()
-                    return hasPermissions(context, *leftPermissions)
+                    return hasPermissions(context, leftPermissions)
                 }
             } else {
-                return hasPermissions(context, *permissions)
+                return hasPermissions(context, permissions)
             }
         } else {
             // 低于安卓14的版本
-            return hasPermissions(context, *permissions)
+            return hasPermissions(context, permissions)
         }
     }
 

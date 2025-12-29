@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -11,8 +12,11 @@ import android.text.TextUtils
 import com.androidx.LogUtils
 import com.androidx.media.ExifUtils.convertDMSFractionToDecimal
 import com.androidx.media.ImageExif
+import com.androidx.media.Resolution
 import com.androidx.utils.UriUtils
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.util.Locale
 
 /**
@@ -89,5 +93,115 @@ object ImageUtils {
             }
 
         })
+    }
+
+    fun loadBitmapFromUri(
+        context: Context, uri: Uri,
+        maxWidth: Int? = null,
+        maxHeight: Int? = null
+    ): Bitmap? {
+        return try {
+            val bounds = decodeBitmapBounds(context, uri) ?: return null
+
+            val inSampleSize = calculateInSampleSize(
+                bounds.width,
+                bounds.height,
+                maxWidth,
+                maxHeight
+            )
+
+            decodeBitmap(context, uri, inSampleSize)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun decodeBitmap(
+        context: Context,
+        uri: Uri,
+        inSampleSize: Int
+    ): Bitmap? {
+        val options = BitmapFactory.Options().apply {
+            this.inSampleSize = inSampleSize
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
+
+        ImageUtils.openInputStream(context, uri)?.use {
+            return BitmapFactory.decodeStream(it, null, options)
+        }
+
+        return null
+    }
+
+
+    fun decodeBitmapBounds(
+        context: Context,
+        uri: Uri
+    ): Resolution? {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+
+        ImageUtils.openInputStream(context, uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+
+        if (options.outWidth <= 0 || options.outHeight <= 0) {
+            return null
+        }
+
+        return Resolution(options.outWidth, options.outHeight)
+    }
+
+    fun openInputStream(
+        context: Context,
+        uri: Uri
+    ): InputStream? {
+        val uriString = uri.toString()
+
+        return when {
+            // ① assets（必须最先判断）
+            uriString.startsWith(UriUtils.ASSET_PREFIX) -> {
+                val assetPath = uriString.removePrefix(UriUtils.ASSET_PREFIX)
+                context.assets.open(assetPath)
+            }
+            // ② content://
+            uri.scheme == ContentResolver.SCHEME_CONTENT -> {
+                context.contentResolver.openInputStream(uri)
+            }
+            // ③ file:// 普通文件
+            uri.scheme == ContentResolver.SCHEME_FILE -> {
+                uri.path?.let { FileInputStream(it) }
+            }
+
+            else -> null
+        }
+    }
+
+
+    fun calculateInSampleSize(
+        srcWidth: Int,
+        srcHeight: Int,
+        maxWidth: Int?,
+        maxHeight: Int?
+    ): Int {
+        if (maxWidth == null && maxHeight == null) return 1
+
+        val reqWidth = maxWidth ?: Int.MAX_VALUE
+        val reqHeight = maxHeight ?: Int.MAX_VALUE
+
+        var inSampleSize = 1
+        val halfWidth = srcWidth / 2
+        val halfHeight = srcHeight / 2
+
+        while (
+            halfWidth / inSampleSize >= reqWidth ||
+            halfHeight / inSampleSize >= reqHeight
+        ) {
+            inSampleSize *= 2
+        }
+
+        return inSampleSize.coerceAtLeast(1)
     }
 }
