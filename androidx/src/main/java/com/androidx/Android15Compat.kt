@@ -2,8 +2,10 @@ package com.androidx
 
 import android.app.Activity
 import android.view.View
+import android.view.Window
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.appbar.AppBarLayout
@@ -60,5 +62,10 @@ object Android15Compat {
                 controller.isAppearanceLightStatusBars = lightStatusBars
             }
         }
+    }
+
+    // 启用Edge to Edge 特性
+    fun enableEdgeToEdge(window: Window?) {
+        window?.let { WindowCompat.setDecorFitsSystemWindows(it, false) }
     }
 }

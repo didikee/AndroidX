@@ -67,8 +67,9 @@ object SaveHelper {
             outputStream?.let {
                 it.write(bytes)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    contentValues.put(MediaStore.MediaColumns.IS_PENDING, false)
-                    contentResolver.update(uri, contentValues, null, null)
+                    val pending = ContentValues()
+                    pending.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    contentResolver.update(uri, pending, null, null)
                 }
                 return uri
             }
