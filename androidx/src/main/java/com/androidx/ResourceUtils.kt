@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.TypedValue
 import android.view.Menu
@@ -137,13 +138,23 @@ object ResourceUtils {
     }
 
     fun tintDrawable(drawable: Drawable, @ColorInt color: Int): Drawable {
-        return tintDrawable(drawable,ColorStateList.valueOf(color))
+        return tintDrawable(drawable, ColorStateList.valueOf(color))
     }
 
     fun tintDrawable(drawable: Drawable, colors: ColorStateList): Drawable {
         val wrappedDrawable = DrawableCompat.wrap(drawable)
         DrawableCompat.setTintList(wrappedDrawable, colors)
         return wrappedDrawable
+    }
+
+    // 创建圆形Drawable
+    fun createCircleDrawable(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL       // 圆形
+            setColor(color)                     // 填充颜色
+            // 可选：加边框
+            // setStroke(2.dpToPx(context), Color.BLACK)
+        }
     }
 
     fun isDarkTheme(resources: Resources): Boolean {
