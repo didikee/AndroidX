@@ -21,6 +21,8 @@ import com.androidx.utils.FileUtils
 import com.androidx.utils.IOUtils
 import com.androidx.utils.MediaUtils
 import com.androidx.utils.UriUtils
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -824,6 +826,74 @@ object AndroidStorage {
             } finally {
                 IOUtils.close(fileInputStream)
                 IOUtils.close(fileOutputStream)
+            }
+        }
+        return null
+    }
+
+    /**
+     * 将 ByteArrayOutputStream 保存到下载目录
+     *
+     * @param context       上下文
+     * @param outputStream  要保存的数据
+     * @param filename      文件名（必须提供，ByteArray 无法推断）
+     * @param customDirName 二级目录名称，空则直接放 Downloads
+     */
+    @WorkerThread
+    @JvmStatic
+    fun saveFileToDownloads(
+        context: Context,
+        outputStream: ByteArrayOutputStream,
+        filename: String,
+        mimeType: String,
+        customDirName: String?
+    ): Uri? {
+        val resolver = context.contentResolver
+        val folderPath = getFolderPath(DirectoryFiles.DOWNLOADS, customDirName)
+        val compatPath = getCompatPath(folderPath, filename)
+        val finalMimeType = mimeType.ifEmpty {
+            getMimeType(filename, "", "")
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = createBaseValues(
+                compatPath,
+                filename,
+                finalMimeType,
+                0
+            )
+
+            return try {
+                save(
+                    resolver,
+                    contentValues,
+                    ByteArrayInputStream(outputStream.toByteArray()),
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        } else {
+            var fos: FileOutputStream? = null
+            try {
+                val file = File(compatPath)
+                file.parentFile?.mkdirs()
+
+                fos = FileOutputStream(file)
+                fos.write(outputStream.toByteArray())
+                fos.flush()
+
+                if (file.exists() && file.length() > 0) {
+                    FileUtils.scanFile(context, file)
+                    return Uri.fromFile(file)
+                } else {
+                    file.delete()
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } finally {
+                IOUtils.close(fos)
             }
         }
         return null
