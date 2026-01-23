@@ -16,6 +16,14 @@ import com.androidx.utils.UriUtils
 object ShareUtils {
     private const val TAG = "ShareUtils"
 
+    fun shareText(context: Context, text: String, title: String = "") {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
+        context.startActivity(Intent.createChooser(intent, title))
+    }
+
     @JvmStatic
     fun share(
         context: Context,

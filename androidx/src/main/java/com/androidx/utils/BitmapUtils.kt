@@ -7,6 +7,7 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import androidx.exifinterface.media.ExifInterface
+import com.androidx.media.MimeType
 import java.io.File
 import java.io.FileOutputStream
 
@@ -227,6 +228,26 @@ object BitmapUtils {
             }
             else -> Bitmap.CompressFormat.JPEG // 兜底
         }
+    }
+
+    /**
+     * 获取 Bitmap.CompressFormat 对应的 MIME 类型
+     */
+    fun getMimeType(format: Bitmap.CompressFormat): String = when (format) {
+        Bitmap.CompressFormat.JPEG -> MimeType.JPEG
+        Bitmap.CompressFormat.PNG -> MimeType.PNG
+        Bitmap.CompressFormat.WEBP -> MimeType.WEBP
+        else -> MimeType.IMAGE
+    }
+
+    /**
+     * 获取 Bitmap.CompressFormat 对应的文件扩展名
+     */
+    fun getExtension(format: Bitmap.CompressFormat): String = when (format) {
+        Bitmap.CompressFormat.JPEG -> "jpg"
+        Bitmap.CompressFormat.PNG -> "png"
+        Bitmap.CompressFormat.WEBP -> "webp"
+        else -> "jpg"
     }
 
 }

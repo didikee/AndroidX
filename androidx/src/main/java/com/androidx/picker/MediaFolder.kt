@@ -16,6 +16,9 @@ open class MediaFolder(
     @JvmField var items: ArrayList<MediaItem> = ArrayList(),  // 当前文件夹下所有图片的集合
     @JvmField var check: Boolean = false  // 当前文件夹是否选中
 ) : Parcelable {
+    val id: String
+        get() = "${path}/${name}"
+
     // 用于缓存计算的文件夹总大小，避免每次访问都进行计算
     @IgnoredOnParcel
     @Transient

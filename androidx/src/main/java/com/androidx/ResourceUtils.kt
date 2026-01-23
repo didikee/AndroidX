@@ -62,9 +62,9 @@ object ResourceUtils {
         return outValue.resourceId
     }
 
-    @JvmStatic
-    fun getSelectableItemBackground(context: Context): Int {
-        return getAttrResourceId(context, android.R.attr.selectableItemBackground)
+    fun getSelectableItemBackground(context: Context): Drawable? {
+        val resId = getSelectableItemBackgroundResId(context)
+        return ContextCompat.getDrawable(context, resId)
     }
 
 
