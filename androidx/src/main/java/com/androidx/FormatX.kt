@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.format.DateFormat
 import android.text.format.Formatter
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -84,6 +85,25 @@ object FormatX {
 //
 //        return text
 //    }
+
+    // 格式化展示名称，不显示拓展名（如果有的话）
+    fun formatDisplayName(displayName: String): String {
+        if (displayName.isBlank()) return displayName
+
+        val lastDotIndex = displayName.lastIndexOf('.')
+
+        return if (lastDotIndex > 0) {
+            displayName.substring(0, lastDotIndex)
+        } else {
+            displayName
+        }
+    }
+
+    fun formatNow(): String {
+        val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+        val dateTime = dateFormat.format(Date())
+        return dateTime
+    }
 
 
 }

@@ -173,6 +173,41 @@ object BitmapUtils {
         }
     }
 
+    fun transform(
+        src: Bitmap,
+        rotateDegrees: Float,
+        flipHorizontal: Boolean,
+        flipVertical: Boolean
+    ): Bitmap {
+        if (rotateDegrees == 0f && !flipHorizontal && !flipVertical) {
+            return src
+        }
+
+        val matrix = Matrix()
+
+        // 1. rotate
+        if (rotateDegrees != 0f) {
+            matrix.postRotate(rotateDegrees)
+        }
+
+        // 2. flip
+        val scaleX = if (flipHorizontal) -1f else 1f
+        val scaleY = if (flipVertical) -1f else 1f
+        if (scaleX != 1f || scaleY != 1f) {
+            matrix.postScale(scaleX, scaleY)
+        }
+
+        return Bitmap.createBitmap(
+            src,
+            0,
+            0,
+            src.width,
+            src.height,
+            matrix,
+            true
+        )
+    }
+
     fun saveBitmapToFile(
         bitmap: Bitmap,
         outputFile: File,

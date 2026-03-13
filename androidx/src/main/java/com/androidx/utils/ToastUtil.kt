@@ -14,10 +14,10 @@ object ToastUtil {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun show(context: Context?, message: String?, longToast: Boolean = false) {
-        show(context, message, if (longToast) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
+        showInternal(context, message, if (longToast) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
     }
 
-    fun show(context: Context?, message: String?, duration: Int) {
+    private fun showInternal(context: Context?, message: String?, duration: Int) {
         if (message.isNullOrBlank()) return
 
         context?.let {
