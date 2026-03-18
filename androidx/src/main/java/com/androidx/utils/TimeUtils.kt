@@ -1,6 +1,9 @@
 package com.androidx.utils
 
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.format.DateFormat
+import android.text.style.RelativeSizeSpan
 import java.util.Date
 import java.util.Locale
 
@@ -185,6 +188,22 @@ object TimeUtils {
         val m = (seconds / 60) % 60
         val h = (seconds / (60 * 60)) % 24
         return String.format(Locale.ENGLISH, "%02d:%02d:%02d.%03d", h, m, s, mills)
+    }
+
+    fun styleMilliseconds(time: String): SpannableString {
+        val dotIndex = time.indexOf('.')
+        val spannable = SpannableString(time)
+
+        if (dotIndex != -1) {
+            spannable.setSpan(
+                RelativeSizeSpan(0.8f),   // 缩小到60%
+                dotIndex,
+                time.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        return spannable
     }
 
 }

@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import com.androidx.AndroidStorage;
 import com.androidx.AndroidUtils;
+import com.androidx.LogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -122,11 +123,17 @@ public class MediaLoader {
             allExtraProjections.addAll(Arrays.asList(extraProjections));
         }
         addExtraProjections(projections, allExtraProjections);
+        Cursor cursor = null;
+        try {
+            cursor = contentResolver.query(externalContentUri,
+                    projections.toArray(new String[projections.size()]),
+                    selection, selectionArgs, order);
+        } catch (Exception e) {
+            LogUtils.e("MediaLoader query failed: " + e.getLocalizedMessage());
+        }
 
-        Cursor cursor = contentResolver.query(externalContentUri,
-                projections.toArray(new String[projections.size()]),
-                selection, selectionArgs, order);
-        if (cursor == null) {
+        // 部分Rom 在没有权限或者异常时返回不为null的cursor，但是数量是0
+        if (cursor == null || cursor.getCount() == 0) {
             return new ArrayList<>();
         }
 

@@ -14,6 +14,9 @@ import java.util.Locale
  * description:
  */
 object FormatX {
+    const val FORMAT_DATE_DEFAULT = "yyyyMMdd_HHmmss"
+    const val FORMAT_DATE_yyyyMMdd = "yyyyMMdd"
+
     // 保留1位小数或者显示整数
     fun formatFloat(value: Float): String {
         val df = DecimalFormat("0.#") // 保留 1 位小数，如果是 0 则省略
@@ -99,8 +102,8 @@ object FormatX {
         }
     }
 
-    fun formatNow(): String {
-        val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+    fun formatNow(formatStr: String = FORMAT_DATE_DEFAULT): String {
+        val dateFormat = SimpleDateFormat(formatStr, Locale.getDefault())
         val dateTime = dateFormat.format(Date())
         return dateTime
     }

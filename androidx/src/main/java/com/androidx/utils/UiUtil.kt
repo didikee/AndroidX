@@ -130,10 +130,32 @@ object UiUtil {
      * @param dst
      * @return
      */
+    @Deprecated("使用： calculateRectToRectCenterFit 函数代替吧")
     fun setRectToRectCenterFit(src: RectF?, dst: RectF?): RectF? {
         if (src == null || dst == null) {
             return null
         }
+        val matrix = Matrix()
+        matrix.setRectToRect(src, dst, Matrix.ScaleToFit.CENTER)
+
+        //        Log.d(TAG, "src: " + src.toString());
+//        Log.d(TAG, "dst: " + dst.toString());
+//        Log.d(TAG, "matrix: " + matrix.toString());
+        val displayRectF = RectF()
+        matrix.mapRect(displayRectF, src)
+
+        //        Log.d(TAG, "displayRectF: " + displayRectF.toString());
+        return displayRectF
+    }
+
+    /**
+     * 将一个矩形放到另一个矩形的中，保持缩放和居中。
+     * 类型Matrix的一个方法：[Matrix.setRectToRect]
+     * @param src
+     * @param dst
+     * @return
+     */
+    fun calculateRectToRectCenterFit(src: RectF, dst: RectF): RectF {
         val matrix = Matrix()
         matrix.setRectToRect(src, dst, Matrix.ScaleToFit.CENTER)
 
