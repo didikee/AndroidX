@@ -15,9 +15,9 @@ class MediaItemDataHandler : DataHandler<MediaItem> {
 
     override fun handle(
         cursor: Cursor, projections: ArrayList<String>,
-        uri: Uri, displayName: String,
-        mimeType: String, size: Long, dateAdded: Long,
-        dateModified: Long, data: String, relativePath: String
+        uri: Uri, displayName: String?, mimeType: String?,
+        size: Long, dateAdded: Long, dateModified: Long,
+        data: String?, relativePath: String?
     ): MediaItem {
         var width = 0
         var height = 0
@@ -55,13 +55,13 @@ class MediaItemDataHandler : DataHandler<MediaItem> {
         }
         val mediaItem = MediaItem(uri)
         // 设置公共参数
-        mediaItem.displayName = displayName
+        mediaItem.displayName = displayName ?: ""
         mediaItem.size = size
-        mediaItem.mimeType = mimeType
+        mediaItem.mimeType = mimeType ?: ""
         mediaItem.dateAdded = dateAdded
         mediaItem.dateModified = dateModified
-        mediaItem.data = data
-        mediaItem.relativePath = relativePath
+        mediaItem.data = data ?: ""
+        mediaItem.relativePath = relativePath ?: ""
         //封装实体
         mediaItem.width = width
         mediaItem.height = height
