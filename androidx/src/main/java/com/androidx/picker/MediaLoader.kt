@@ -26,7 +26,7 @@ class MediaLoader private constructor(builder: Builder) {
 
     private val contentResolver: ContentResolver = builder.resolver
     private var externalContentUri: Uri? = builder.contentUri
-    private val order: String? = builder.order
+    private val order: String = builder.order
     private val selection: String? = builder.selection
     private val selectionArgs: Array<String>? = builder.selectionArgs
     private val targetFolderPath: String? = builder.targetFolderPath
@@ -97,7 +97,7 @@ class MediaLoader private constructor(builder: Builder) {
         var cursor: Cursor? = null
         try {
             cursor = contentResolver.query(
-                externalContentUri,
+                externalContentUri!!,
                 projections.toTypedArray(),
                 selection, selectionArgs, order
             )
@@ -113,24 +113,32 @@ class MediaLoader private constructor(builder: Builder) {
         while (cursor.moveToNext()) {
             // 这些是公用的参数
             val id = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
-            val mimeType = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
+            val mimeType =
+                cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
             // 根据mimetype来过滤文件
             if (contains(blockMimeTypes, mimeType)) {
                 continue
             }
-            if (targetMimeTypes != null && targetMimeTypes.isNotEmpty() && !contains(targetMimeTypes, mimeType)) {
+            if (targetMimeTypes != null && targetMimeTypes.isNotEmpty() && !contains(
+                    targetMimeTypes,
+                    mimeType
+                )
+            ) {
                 continue
             }
             var data = ""
             var relativePath = ""
             if (isAndroid10) {
                 if (externalStorageLegacy) {
-                    data = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                    data =
+                        cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
                 } else {
-                    relativePath = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH))
+                    relativePath =
+                        cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH))
                 }
             } else {
-                data = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                data =
+                    cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
             }
             // 文件夹过滤
             if (!isTargetFolder(data, relativePath, targetFolderPath)) {
@@ -138,12 +146,15 @@ class MediaLoader private constructor(builder: Builder) {
             }
 
             // 现在全部改为uri来实现
-            val uri = ContentUris.withAppendedId(externalContentUri, id.toLong())
+            val uri = ContentUris.withAppendedId(externalContentUri!!, id.toLong())
             // 延迟解析的公共参数
-            val displayName = cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
+            val displayName =
+                cursor.getStringSafe(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
             val size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE))
-            val dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
-            val dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED))
+            val dateAdded =
+                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
+            val dateModified =
+                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED))
 
             dataHandler.handle(
                 cursor,
@@ -194,8 +205,8 @@ class MediaLoader private constructor(builder: Builder) {
         return false
     }
 
-    class Builder internal constructor(
-        internal var resolver: ContentResolver
+    class Builder(
+        val resolver: ContentResolver
     ) {
         internal var contentUri: Uri? = null
         internal var order: String = ORDER_DATE_MODIFIED_DESC // 默认按照时间排序，最近的媒体在最前面，符合90%的使用场景
@@ -252,7 +263,8 @@ class MediaLoader private constructor(builder: Builder) {
             if (allItems.isNotEmpty()) {
                 //构造所有媒体文件的集合
                 val allImagesFolder = MediaFolder()
-                allImagesFolder.name = if (TextUtils.isEmpty(defaultFolderName)) "Recently" else defaultFolderName!!
+                allImagesFolder.name =
+                    if (TextUtils.isEmpty(defaultFolderName)) "Recently" else defaultFolderName!!
                 allImagesFolder.path = ""
                 allImagesFolder.items = allItems
                 mediaFolders.add(0, allImagesFolder) //确保第一条是所有图片
@@ -265,7 +277,8 @@ class MediaLoader private constructor(builder: Builder) {
          */
         fun getUris(): ArrayList<Uri> = MediaLoader(this).execute(UriDataHandler())
 
-        fun <T> get(dataHandler: DataHandler<T>): ArrayList<T> = MediaLoader(this).execute(dataHandler)
+        fun <T> get(dataHandler: DataHandler<T>): ArrayList<T> =
+            MediaLoader(this).execute(dataHandler)
     }
 
     companion object {
