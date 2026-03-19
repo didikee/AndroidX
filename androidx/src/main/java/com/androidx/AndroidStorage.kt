@@ -189,11 +189,18 @@ object AndroidStorage {
         contentValues: ContentValues,
         contentTransfer: ContentTransfer<*>
     ): Uri? {
-        val insertUri = resolver.insert(EXTERNAL_IMAGE_PRIMARY_URI, contentValues)
+        val insertUri = resolver.insert(EXTERNAL_IMAGE_PRIMARY_URI, contentValues) ?: run {
+            LogUtils.e("StorageUtils saveImage() insertUri is null.")
+            return null
+        }
         var outputStream: OutputStream? = null
         try {
-            outputStream = resolver.openOutputStream(insertUri!!)
-            val transfer = contentTransfer.convertTo(outputStream!!)
+            outputStream = resolver.openOutputStream(insertUri) ?: run {
+                LogUtils.e("StorageUtils saveImage() openOutputStream failed.")
+                delete(resolver, insertUri)
+                return null
+            }
+            val transfer = contentTransfer.convertTo(outputStream)
             if (transfer > 0) {
                 updateUriFileLength(
                     resolver,
@@ -271,10 +278,17 @@ object AndroidStorage {
             LogUtils.e("StorageUtils save() contentResolver or bitmap is null.")
             return null
         }
-        val insertUri = resolver.insert(contentUri, contentValues)
+        val insertUri = resolver.insert(contentUri, contentValues) ?: run {
+            LogUtils.e("StorageUtils save() insertUri is null.")
+            return null
+        }
         var outputStream: OutputStream? = null
         try {
-            outputStream = resolver.openOutputStream(insertUri!!)
+            outputStream = resolver.openOutputStream(insertUri) ?: run {
+                LogUtils.e("StorageUtils save() openOutputStream failed.")
+                delete(resolver, insertUri)
+                return null
+            }
             val transfer = IOUtils.transfer2(inputStream, outputStream)
             if (transfer > 0) {
                 updateFileLengthAndClearPending(
