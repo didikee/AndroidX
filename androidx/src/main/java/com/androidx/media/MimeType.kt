@@ -46,10 +46,10 @@ object MimeType {
     const val WAV: String = "audio/x-wav"
     const val AMR: String = "audio/amr"
     const val M4A: String = "audio/mpeg"
-    const val AC3:String = "audio/ac3"
-    const val WMA:String = "audio/x-ms-wma"
-    const val FLAC:String = "audio/flac"
-    const val OGG:String = "audio/ogg"
+    const val AC3: String = "audio/ac3"
+    const val WMA: String = "audio/x-ms-wma"
+    const val FLAC: String = "audio/flac"
+    const val OGG: String = "audio/ogg"
 
     // Document files
     const val PDF: String = "application/pdf"
@@ -73,6 +73,10 @@ object MimeType {
         return !TextUtils.isEmpty(mimeType) && mimeType!!.lowercase(Locale.getDefault()).startsWith(
             PREFIX_AUDIO
         )
+    }
+
+    fun isGIF(mimeType: String?): Boolean {
+        return !TextUtils.isEmpty(mimeType) && mimeType!!.equals(GIF, true)
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.androidx.file
 
+import com.androidx.FormatX
+
 /**
  *
  * description:
@@ -30,6 +32,13 @@ class FileNameWrapper(val filename: String) {
             return defaultExt
         }
         return extension
+    }
+
+    fun getFileBaseName(defaultBaseName: String = FormatX.formatNow()): String {
+        if (baseName.isEmpty()) {
+            return defaultBaseName
+        }
+        return baseName
     }
 
 

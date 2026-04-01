@@ -575,7 +575,7 @@ public final class UriUtils {
      *
      * @return
      */
-    private static ArrayList<String> getCommonProjects() {
+    public static ArrayList<String> getCommonProjects() {
         ArrayList<String> projection = new ArrayList<>();
         projection.add(MediaStore.MediaColumns._ID);
         projection.add(MediaStore.MediaColumns.DISPLAY_NAME);

@@ -936,4 +936,34 @@ object AndroidStorage {
         }
         return false
     }
+
+    fun copyUriToFile(
+        contentResolver: ContentResolver,
+        sourceUri: Uri,
+        destFile: File
+    ): Result<File> {
+        return runCatching {
+
+            // 先写入临时文件，避免脏数据
+            val tempFile = File(destFile.parent, destFile.name + ".tmp")
+
+            contentResolver.openInputStream(sourceUri)?.use { input ->
+                FileOutputStream(tempFile).use { output ->
+                    input.copyTo(output, bufferSize = 32 * 1024) // 32KB buffer
+                    output.flush()
+                }
+            } ?: throw IllegalStateException("Cannot open input stream: $sourceUri")
+
+            // 替换正式文件
+            if (destFile.exists()) {
+                destFile.delete()
+            }
+
+            if (!tempFile.renameTo(destFile)) {
+                throw IllegalStateException("Rename failed")
+            }
+
+            destFile
+        }
+    }
 }
