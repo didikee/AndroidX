@@ -174,6 +174,13 @@ object UriUtils {
         return null
     }
 
+    /**
+     * 获取图片信息
+     *
+     * @param contentResolver
+     * @param uri
+     * @return
+     */
     fun getImageInfo(contentResolver: ContentResolver?, uri: Uri?): MediaStoreInfo? {
         if (contentResolver != null && uri != null) {
             val projections = UriUtils.getCommonProjects()
@@ -197,44 +204,42 @@ object UriUtils {
                     null,
                     null
                 )
-                if (cursor == null) {
-                    LogUtils.e("getImageInfo get a empty cursor: " + uri.toString())
-                } else {
-                    if (cursor.moveToFirst()) {
-                        val id = cursor.getLongSafely(MediaStore.MediaColumns._ID)
+                cursor?.let {
+                    if (it.moveToFirst()) {
+                        val id = it.getLongSafely(MediaStore.MediaColumns._ID)
                         val displayName =
-                            cursor.getStringSafely(MediaStore.MediaColumns.DISPLAY_NAME)
-                        val mimeType = cursor.getStringSafely(MediaStore.MediaColumns.MIME_TYPE)
+                            it.getStringSafely(MediaStore.MediaColumns.DISPLAY_NAME)
+                        val mimeType = it.getStringSafely(MediaStore.MediaColumns.MIME_TYPE)
                         val relativePath: String
                         val data: String
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             relativePath =
-                                cursor.getStringSafely(MediaStore.MediaColumns.RELATIVE_PATH)
+                                it.getStringSafely(MediaStore.MediaColumns.RELATIVE_PATH)
                             data = ""
                         } else {
                             relativePath = ""
-                            data = cursor.getStringSafely(MediaStore.MediaColumns.DATA)
+                            data = it.getStringSafely(MediaStore.MediaColumns.DATA)
                         }
-                        val size = cursor.getLongSafely(MediaStore.MediaColumns.SIZE)
-                        val dateAdded = cursor.getLongSafely(MediaStore.MediaColumns.DATE_ADDED)
+                        val size = it.getLongSafely(MediaStore.MediaColumns.SIZE)
+                        val dateAdded = it.getLongSafely(MediaStore.MediaColumns.DATE_ADDED)
                         val dateModified =
-                            cursor.getLongSafely(MediaStore.MediaColumns.DATE_MODIFIED)
+                            it.getLongSafely(MediaStore.MediaColumns.DATE_MODIFIED)
 
                         // custom
                         val dateToken = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            cursor.getLongSafely(UriUtils.DATE_TAKEN)
+                            it.getLongSafely(UriUtils.DATE_TAKEN)
                         } else {
-                            cursor.getLongSafely(MediaStore.Images.Media.DATE_TAKEN)
+                            it.getLongSafely(MediaStore.Images.Media.DATE_TAKEN)
                         }
-                        val width = cursor.getIntSafely(MediaStore.Images.Media.WIDTH)
-                        val height = cursor.getIntSafely(MediaStore.Images.Media.HEIGHT)
-                        val rotate = cursor.getIntSafely(MediaStore.Images.Media.ORIENTATION)
+                        val width = it.getIntSafely(MediaStore.Images.Media.WIDTH)
+                        val height = it.getIntSafely(MediaStore.Images.Media.HEIGHT)
+                        val rotate = it.getIntSafely(MediaStore.Images.Media.ORIENTATION)
 
                         var xmpString = ""
                         if (getOSVersion() >= 30) {
-                            val xmpIndex = cursor.getColumnIndex(MediaStore.Images.Media.XMP)
+                            val xmpIndex = it.getColumnIndex(MediaStore.Images.Media.XMP)
                             if (xmpIndex != -1) {
-                                val xmpData = cursor.getBlob(xmpIndex)
+                                val xmpData = it.getBlob(xmpIndex)
                                 if (xmpData != null && xmpData.size > 0) {
                                     // 将字节数组转换为字符串
                                     xmpString = String(xmpData, StandardCharsets.UTF_8)
@@ -258,13 +263,13 @@ object UriUtils {
                             xmp = xmpString
                         )
                     }
+                } ?: run {
+                    LogUtils.e("getImageInfo get a empty cursor: $uri")
                 }
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             } finally {
-                if (cursor != null) {
-                    cursor.close()
-                }
+                cursor?.close()
             }
         }
         return null
@@ -300,6 +305,13 @@ object UriUtils {
         }
     }
 
+    /**
+     * 获取音频信息
+     *
+     * @param contentResolver
+     * @param uri
+     * @return
+     */
     fun getAudioStoreInfo(contentResolver: ContentResolver?, uri: Uri?): MediaStoreInfo? {
         if (contentResolver != null && uri != null) {
             val projections = UriUtils.getCommonProjects()

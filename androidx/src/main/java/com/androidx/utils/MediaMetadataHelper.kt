@@ -78,13 +78,17 @@ internal object MediaMetadataHelper {
             metaData.dateModified = it.dateModified
             metaData.relativePath = it.relativePath
         }
+        var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
-            MediaMetadataRetriever().use { retriever ->
-                retriever.setDataSource(context, videoUri)
-                fillDataFromMediaMetadataRetriever(retriever, metaData)
-            }
+            mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(context, videoUri)
+            fillDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaMetadataRetriever setDataSource failed: ${e.message}")
         } catch (e: Exception) {
             LogUtils.e("MediaMetadataRetriever error: ${e.message}")
+        } finally {
+            IOUtils.close(mediaMetadataRetriever)
         }
 
         var mediaExtractor: MediaExtractor? = null
@@ -92,6 +96,8 @@ internal object MediaMetadataHelper {
             mediaExtractor = MediaExtractor()
             mediaExtractor.setDataSource(context, videoUri, null)
             fillDataFromMediaExtractor(mediaExtractor, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaExtractor setDataSource failed: ${e.message}")
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
@@ -117,6 +123,8 @@ internal object MediaMetadataHelper {
             mediaMetadataRetriever = MediaMetadataRetriever()
             mediaMetadataRetriever.setDataSource(videoFile.absolutePath)
             fillDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaMetadataRetriever setDataSource failed: ${e.message}")
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
         } finally {
@@ -128,6 +136,8 @@ internal object MediaMetadataHelper {
             mediaExtractor = MediaExtractor()
             mediaExtractor.setDataSource(videoFile.absolutePath)
             fillDataFromMediaExtractor(mediaExtractor, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaExtractor setDataSource failed: ${e.message}")
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
