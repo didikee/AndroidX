@@ -10,6 +10,7 @@ import android.os.Build
 import android.text.TextUtils
 import com.androidx.LogUtils
 import com.androidx.media.VideoMetaData
+import com.androidx.media.VideoMetaData2
 import java.io.File
 import java.io.IOException
 
@@ -52,6 +53,10 @@ internal object MediaMetadataHelper {
     private const val TAG = "MediaMetadataHelper"
     private const val SECOND = 1000 * 1000.0
 
+    @Deprecated(
+        message = "Use getVideoCodecInfo instead, this method includes file storage info which is not needed for codec info",
+        replaceWith = ReplaceWith("getVideoCodecInfo(context, videoUri)")
+    )
     @JvmStatic
     fun getVideoMetaData(context: Context, videoUri: Uri): VideoMetaData {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
@@ -107,6 +112,10 @@ internal object MediaMetadataHelper {
     }
 
 
+    @Deprecated(
+        message = "Use getVideoCodecInfo instead, this method includes file storage info which is not needed for codec info",
+        replaceWith = ReplaceWith("getVideoCodecInfo(videoFile)")
+    )
     @JvmStatic
     fun getVideoMetaData(videoFile: File?): VideoMetaData {
         val metaData = VideoMetaData()
@@ -314,4 +323,217 @@ internal object MediaMetadataHelper {
         }
         return defaultValue
     }
+
+    @JvmStatic
+    fun getVideoCodecInfo(context: Context, videoUri: Uri): VideoMetaData2 {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            val pathFromUri = UriUtils.getPathFromUri(context, videoUri)
+            if (!TextUtils.isEmpty(pathFromUri)) {
+                val file = File(pathFromUri)
+                if (file.exists() && file.length() > 0) {
+                    return getVideoCodecInfo(file)
+                }
+            }
+            return getVideoCodecInfoForUri(context, videoUri)
+        } else {
+            return getVideoCodecInfoForUri(context, videoUri)
+        }
+    }
+
+    private fun getVideoCodecInfoForUri(context: Context, videoUri: Uri): VideoMetaData2 {
+        val metaData = VideoMetaData2()
+        var mediaMetadataRetriever: MediaMetadataRetriever? = null
+        try {
+            mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(context, videoUri)
+            fillCodecDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaMetadataRetriever setDataSource failed: ${e.message}")
+        } catch (e: Exception) {
+            LogUtils.e("MediaMetadataRetriever error: ${e.message}")
+        } finally {
+            IOUtils.close(mediaMetadataRetriever)
+        }
+
+        var mediaExtractor: MediaExtractor? = null
+        try {
+            mediaExtractor = MediaExtractor()
+            mediaExtractor.setDataSource(context, videoUri, null)
+            fillCodecDataFromMediaExtractor(mediaExtractor, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaExtractor setDataSource failed: ${e.message}")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            mediaExtractor?.release()
+        }
+        return metaData
+    }
+
+    @JvmStatic
+    fun getVideoCodecInfo(videoFile: File?): VideoMetaData2 {
+        val metaData = VideoMetaData2()
+        if (videoFile == null || !videoFile.exists()) {
+            return metaData
+        }
+
+        var mediaMetadataRetriever: MediaMetadataRetriever? = null
+        try {
+            mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(videoFile.absolutePath)
+            fillCodecDataFromMediaMetadataRetriever(mediaMetadataRetriever, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaMetadataRetriever setDataSource failed: ${e.message}")
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        } finally {
+            IOUtils.close(mediaMetadataRetriever)
+        }
+
+        var mediaExtractor: MediaExtractor? = null
+        try {
+            mediaExtractor = MediaExtractor()
+            mediaExtractor.setDataSource(videoFile.absolutePath)
+            fillCodecDataFromMediaExtractor(mediaExtractor, metaData)
+        } catch (e: RuntimeException) {
+            LogUtils.e("MediaExtractor setDataSource failed: ${e.message}")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            mediaExtractor?.release()
+        }
+        return metaData
+    }
+
+    private fun fillCodecDataFromMediaMetadataRetriever(
+        retriever: MediaMetadataRetriever?,
+        metaData: VideoMetaData2
+    ) {
+        if (retriever == null) {
+            return
+        }
+        metaData.duration = parseLong(
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION),
+            0
+        )
+        metaData.rotation = parseInteger(
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION),
+            0
+        )
+        metaData.width = parseInteger(
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH),
+            0
+        )
+        metaData.height = parseInteger(
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT),
+            0
+        )
+        metaData.bitRate = parseInteger(
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE),
+            0
+        )
+        metaData.mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE) ?: ""
+    }
+
+        private fun fillCodecDataFromMediaExtractor(extractor: MediaExtractor?, metaData: VideoMetaData2) {
+            if (extractor == null) {
+                return
+            }
+            val numTracks = extractor.trackCount
+            val bitrate = metaData.bitRate // 这是在上一步 fillCodecDataFromMediaMetadataRetriever 中获取的
+            var audioSize = 0.0
+            var videoSize = 0.0
+            var audioBitrate = 0.0
+            var videoBitrate = 0.0
+            var videoDuration = 0.0
+            var audioDuration = 0.0
+            for (i in 0 until numTracks) {
+                val format = extractor.getTrackFormat(i)
+                val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
+                var bitRate = 0
+                var sampleRate = 0
+                var channelCount = 0
+                val duration: Long = 0
+                if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                    bitRate = getMediaFormatInt(format, MediaFormat.KEY_BIT_RATE)
+                }
+                if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                    sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                }
+                if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                    channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                }
+                LogUtils.d("Mime: $mime sampleRate: $sampleRate channelCount: $channelCount")
+
+                if (mime.startsWith("audio/")) {
+                    if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                        audioDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
+                    }
+                    audioSize = bitRate * audioDuration / (8.0)
+                    audioBitrate = bitRate.toDouble()
+                    LogUtils.d("getVideoInfo audio size: " + audioSize + " format size: " + (audioSize * 1.0 / (1024L * 1024)) + "MB")
+                }
+
+                if (mime.startsWith("video/")) {
+                    if (metaData.frameRate <= 0 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+                        val frameRate = format.getInteger(MediaFormat.KEY_FRAME_RATE)
+                        if (frameRate > 0) {
+                            metaData.frameRate = frameRate
+                        }
+                    }
+                    if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                        videoDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
+                    }
+                    if (metaData.width <= 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
+                        val width = format.getInteger(MediaFormat.KEY_WIDTH)
+                        if (width > 0) {
+                            metaData.width = width
+                        }
+                    }
+                    if (metaData.height <= 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
+                        val height = format.getInteger(MediaFormat.KEY_HEIGHT)
+                        if (height > 0) {
+                            metaData.height = height
+                        }
+                    }
+                    if (metaData.iFrameRate <= 0 && format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
+                        val iKeyRate = format.getFloat(MediaFormat.KEY_I_FRAME_INTERVAL)
+                        if (iKeyRate > 0) {
+                            metaData.iFrameRate = (iKeyRate)
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (metaData.rotation <= 0 && format.containsKey(MediaFormat.KEY_ROTATION)) {
+                            metaData.rotation =
+                                format.getInteger(MediaFormat.KEY_ROTATION)
+                        }
+                    }
+
+                    if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                        bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE)
+                        if (metaData.bitRate <= 0 && bitRate > 0) {
+                            metaData.bitRate = bitRate
+                        }
+                    }
+
+                    if (metaData.colorFormat <= 0 && format.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
+                        val colorFormat = format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
+                        if (colorFormat != 0) {
+                            metaData.colorFormat = colorFormat
+                        }
+                    }
+                    videoSize = bitRate * duration / SECOND
+                    LogUtils.d("getVideoInfo video size: $videoSize")
+                }
+            } /*end*/
+            metaData.audioBitrate = audioBitrate
+            val fileSize = 0 // 如何获取文件大小？
+            if (fileSize > 0 && videoDuration > 0) {
+                val fileBitrate = (fileSize * 8.0 / videoDuration)
+                LogUtils.d("getVideoInfo file bitrate: $fileBitrate/bps")
+                videoBitrate = (fileSize - audioSize) * 8.0 / videoDuration
+                metaData.videoBitrate = videoBitrate
+                LogUtils.d("getVideoInfo video bitrate: $videoBitrate/bps")
+            }
+        }
 }
