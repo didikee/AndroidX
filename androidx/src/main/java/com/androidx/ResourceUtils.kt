@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -65,6 +66,11 @@ object ResourceUtils {
     fun getSelectableItemBackground(context: Context): Drawable? {
         val resId = getSelectableItemBackgroundResId(context)
         return ContextCompat.getDrawable(context, resId)
+    }
+
+    @ColorInt
+    fun getColorAccent(context: Context, defaultColor: Int = Color.BLUE): Int {
+        return MaterialColors.getColor(context, R.attr.colorAccent, defaultColor)
     }
 
 

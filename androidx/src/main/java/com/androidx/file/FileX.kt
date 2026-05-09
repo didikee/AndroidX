@@ -39,6 +39,18 @@ object FileX {
         return cleanDir(context.cacheDir)
     }
 
+    fun deleteDir(dirPath: String): Long {
+        if (dirPath.isEmpty()) {
+            return 0
+        }
+        val dir = File(dirPath)
+        if (dir.exists() && dir.isDirectory) {
+            return deleteDir(dir)
+        } else {
+            return 0
+        }
+    }
+
     // 会将输入的根目录一起删除掉
     fun deleteDir(dir: File?): Long {
         var deletedSize = 0L
@@ -76,8 +88,8 @@ object FileX {
     }
 
     // 是不是真的存在
-    fun realExists(file: File?):Boolean{
-        if (file == null){
+    fun realExists(file: File?): Boolean {
+        if (file == null) {
             return false
         }
         return file.exists() && file.length() > 0

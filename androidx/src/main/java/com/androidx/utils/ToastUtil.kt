@@ -13,6 +13,13 @@ import android.widget.Toast
 object ToastUtil {
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    fun show(context: Context?, messageResId: Int, longToast: Boolean = false) {
+        context?.let {
+            val msg = it.getString(messageResId)
+            showInternal(it, msg, if (longToast) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
+        }
+    }
+
     fun show(context: Context?, message: String?, longToast: Boolean = false) {
         showInternal(context, message, if (longToast) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
     }

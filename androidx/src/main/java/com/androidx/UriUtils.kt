@@ -300,4 +300,52 @@ object UriUtils {
         }
     }
 
+    fun getAudioStoreInfo(contentResolver: ContentResolver?, uri: Uri?): MediaStoreInfo? {
+        if (contentResolver != null && uri != null) {
+            val projections = UriUtils.getCommonProjects()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projections.add(UriUtils.DATE_TAKEN)
+            }
+            projections.add(MediaStore.Audio.Media.DURATION)
+            var cursor: Cursor? = null
+            try {
+                cursor = contentResolver.query(
+                    uri,
+                    projections.toTypedArray<String?>(),
+                    null,
+                    null,
+                    null
+                )
+                cursor?.let {
+                    if (it.moveToFirst()) {
+                        val mediaUriInfo = MediaStoreInfo()
+                        mediaUriInfo.id = it.getLongSafely(MediaStore.MediaColumns._ID)
+                        mediaUriInfo.displayName = it.getStringSafely(MediaStore.MediaColumns.DISPLAY_NAME)
+                        mediaUriInfo.mimeType = it.getStringSafely(MediaStore.MediaColumns.MIME_TYPE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.relativePath = it.getStringSafely(MediaStore.MediaColumns.RELATIVE_PATH)
+                        } else {
+                            mediaUriInfo.data = it.getStringSafely(MediaStore.MediaColumns.DATA)
+                        }
+                        mediaUriInfo.size = it.getLongSafely(MediaStore.MediaColumns.SIZE)
+                        mediaUriInfo.dateAdded = it.getLongSafely(MediaStore.MediaColumns.DATE_ADDED)
+                        mediaUriInfo.dateModified = it.getLongSafely(MediaStore.MediaColumns.DATE_MODIFIED)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            mediaUriInfo.dateTaken = it.getLongSafely(UriUtils.DATE_TAKEN)
+                        }
+                        mediaUriInfo.duration = it.getLongSafely(MediaStore.Audio.Media.DURATION)
+                        return mediaUriInfo
+                    }
+                } ?: run {
+                    LogUtils.w("getAudioInfo get a empty cursor: $uri")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                cursor?.close()
+            }
+        }
+        return null
+    }
+
 }

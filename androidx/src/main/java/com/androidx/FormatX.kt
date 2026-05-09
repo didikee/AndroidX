@@ -108,5 +108,30 @@ object FormatX {
         return dateTime
     }
 
+    // ffmepg时间格式化，转为3位精度的字符串
+    fun double3(value: Double): String {
+        return doubleDigits(value, 3)
+    }
+
+    fun double2(value: Double): String {
+        return doubleDigits(value, 2)
+    }
+
+    fun doubleDigits(value: Double, digits: Int): String {
+        return String.format(Locale.US, "%.${digits}f", value)
+    }
+
+    // 适用于数值格式化，ffmepg时间格式化，转为3位精度的字符串
+    fun float3(value: Float): String {
+        return floatDigits(value, 3)
+    }
+
+    fun float2(value: Float): String {
+        return floatDigits(value, 2)
+    }
+
+    fun floatDigits(value: Float, digits: Int): String {
+        return String.format(Locale.US, "%.${digits}f", value)
+    }
 
 }

@@ -17,41 +17,54 @@ object LogUtils {
     }
 
     @JvmStatic
-    fun d(message: String) {
+    fun d(message: String?) {
         if (DEBUG) {
-            Log.d(TAG, message)
+            message?.let {
+                Log.d(TAG, it)
+            }
+
         }
     }
 
     @JvmStatic
-    fun w(message: String) {
+    fun w(message: String?) {
         if (DEBUG) {
-            Log.w(TAG, message)
+            message?.let {
+                Log.w(TAG, it)
+            }
         }
     }
 
     @JvmStatic
-    fun e(message: String) {
+    fun e(message: String?) {
         if (DEBUG) {
-            Log.e(TAG, message)
+            message?.let {
+                Log.e(TAG, it)
+            }
         }
     }
 
-    fun d(tag: String, message: String) {
+    fun d(tag: String?, message: String?) {
         if (DEBUG) {
-            Log.d(tag, message)
+            message?.let {
+                Log.d(tag ?: TAG, it)
+            }
         }
     }
 
-    fun w(tag: String, message: String) {
+    fun w(tag: String?, message: String?) {
         if (DEBUG) {
-            Log.w(tag, message)
+            message?.let {
+                Log.w(tag ?: TAG, it)
+            }
         }
     }
 
-    fun e(tag: String, message: String) {
+    fun e(tag: String?, message: String?) {
         if (DEBUG) {
-            Log.e(tag, message)
+            message?.let {
+                Log.e(tag ?: TAG, it)
+            }
         }
     }
 }

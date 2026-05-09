@@ -79,7 +79,9 @@ object AppUtils {
             val intent = Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse("market://details?id=$pkgName")
-            )
+            ).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
             if (userChoose) {
                 context.startActivity(
                     Intent.createChooser(intent, "")
@@ -89,7 +91,13 @@ object AppUtils {
             }
 
         } catch (anfe: ActivityNotFoundException) {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getGooglePlayLink(pkgName))))
+            context.startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(getGooglePlayLink(pkgName))
+                ).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
         }
     }
 
