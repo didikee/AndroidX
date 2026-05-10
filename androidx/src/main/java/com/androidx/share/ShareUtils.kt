@@ -1,5 +1,6 @@
 package com.androidx.share
 
+import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -80,8 +81,9 @@ object ShareUtils {
         uris: ArrayList<Uri>,
         options: ShareOptions = ShareOptions(),
     ): Intent {
+        val isMultiple = uris.size > 1
         val intent = Intent(
-            if (uris.size > 1) Intent.ACTION_SEND_MULTIPLE else Intent.ACTION_SEND
+            if (isMultiple) Intent.ACTION_SEND_MULTIPLE else Intent.ACTION_SEND
         )
 
         if (!options.packageName.isNullOrEmpty()) {
@@ -94,15 +96,30 @@ object ShareUtils {
 
         intent.type = mimeType
 
-        if (uris.size == 1) {
+        if (isMultiple) {
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+        } else {
             val uri = uris.first()
             intent.putExtra(Intent.EXTRA_STREAM, uri)
-            intent.setDataAndType(uri, mimeType)
-        } else {
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+//            intent.setDataAndType(uri, mimeType)
         }
 
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        // 非常关键：兼容微信/QQ/国产 ROM
+//        val clipData = ClipData.newUri(
+//            context.contentResolver,
+//            "shared_files",
+//            uris.first()
+//        )
+//
+//        for (i in 1 until uris.size) {
+//            clipData.addItem(
+//                ClipData.Item(uris[i])
+//            )
+//        }
+//        intent.clipData = clipData
+
         return intent
     }
 
