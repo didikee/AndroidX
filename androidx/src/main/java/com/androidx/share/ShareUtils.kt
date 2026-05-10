@@ -62,8 +62,16 @@ object ShareUtils {
             return
         }
 
-        val intent = buildShareIntent(resolvedMime, uris, options)
-        context.startActivity(Intent.createChooser(intent, options.title.orEmpty()))
+        try {
+            val intent = buildShareIntent(resolvedMime, uris, options)
+            context.startActivity(Intent.createChooser(intent, options.title.orEmpty()))
+        } catch (e: android.os.FileUriExposedException) {
+            LogUtils.e("$TAG: FileUriExposedException: ${e.message}")
+        } catch (e: SecurityException) {
+            LogUtils.e("$TAG: SecurityException: ${e.message}")
+        } catch (e: Exception) {
+            LogUtils.e("$TAG: share failed: ${e.message}")
+        }
     }
 
 
