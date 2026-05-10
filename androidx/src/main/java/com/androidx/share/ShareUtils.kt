@@ -2,6 +2,7 @@ package com.androidx.share
 
 import android.content.ClipData
 import android.content.ComponentName
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -53,6 +54,7 @@ object ShareUtils {
             LogUtils.e("$TAG: mimeType is empty or cannot be resolved")
             return
         }
+        val safeUris = convertToSafeUris(context, uris)
 
         // Android Q 及以下检查指定包是否安装
         if (!options.packageName.isNullOrEmpty()
@@ -64,7 +66,7 @@ object ShareUtils {
         }
 
         try {
-            val intent = buildShareIntent(resolvedMime, uris, options)
+            val intent = buildShareIntent(context, resolvedMime, safeUris, options)
             context.startActivity(Intent.createChooser(intent, options.title.orEmpty()))
         } catch (e: android.os.FileUriExposedException) {
             LogUtils.e("$TAG: FileUriExposedException: ${e.message}")
@@ -75,8 +77,45 @@ object ShareUtils {
         }
     }
 
+    private fun convertToSafeUris(context: Context, uris: ArrayList<Uri>): ArrayList<Uri> {
+        val safeUris = ArrayList<Uri>()
+        for (uri in uris) {
+            val safeUri = convertToSafeUri(context, uri)
+            if (safeUri != null) {
+                safeUris.add(safeUri)
+            }
+        }
+        return safeUris
+    }
+
+    private fun convertToSafeUri(context: Context, uri: Uri): Uri? {
+        return when (uri.scheme) {
+            ContentResolver.SCHEME_FILE -> {
+                val path = uri.path
+                if (path.isNullOrEmpty()) {
+                    LogUtils.e("$TAG: file uri path is null or empty")
+                    return null
+                }
+                val file = java.io.File(path)
+                if (!file.exists()) {
+                    LogUtils.e("$TAG: file not exists: $path")
+                    return null
+                }
+                UriUtils.getUriFrom(context, file)
+            }
+            ContentResolver.SCHEME_CONTENT -> {
+                uri
+            }
+            else -> {
+                LogUtils.w("$TAG: unsupported uri scheme: ${uri.scheme}")
+                uri
+            }
+        }
+    }
+
 
     fun buildShareIntent(
+        context: Context,
         mimeType: String,
         uris: ArrayList<Uri>,
         options: ShareOptions = ShareOptions(),
@@ -101,24 +140,22 @@ object ShareUtils {
         } else {
             val uri = uris.first()
             intent.putExtra(Intent.EXTRA_STREAM, uri)
-//            intent.setDataAndType(uri, mimeType)
         }
 
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         // 非常关键：兼容微信/QQ/国产 ROM
-//        val clipData = ClipData.newUri(
-//            context.contentResolver,
-//            "shared_files",
-//            uris.first()
-//        )
-//
-//        for (i in 1 until uris.size) {
-//            clipData.addItem(
-//                ClipData.Item(uris[i])
-//            )
-//        }
-//        intent.clipData = clipData
+        val clipData = ClipData.newUri(
+            context.contentResolver,
+            "shared_files",
+            uris.first()
+        )
+        for (i in 1 until uris.size) {
+            clipData.addItem(
+                ClipData.Item(uris[i])
+            )
+        }
+        intent.clipData = clipData
 
         return intent
     }

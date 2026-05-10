@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--外部公共存储: 以后考虑收缩范围 -->
     <external-path
         name="external_files"
-        path="."/>
+        path="." />
+
+    <!-- filesDir：context.filesDir -->
     <files-path
         name="context_files"
-        path="."/>
+        path="." />
+
+    <!-- cacheDir: context.cacheDir -->
+    <cache-path
+        name="cache"
+        path="." />
+
+    <!-- externalCacheDir: context.externalCacheDir -->
+    <external-cache-path
+        name="external_cache"
+        path="." />
+
+    <!-- getExternalFilesDir: context.getExternalFilesDir() -->
+    <external-files-path
+        name="external_files"
+        path="." />
 </paths>
