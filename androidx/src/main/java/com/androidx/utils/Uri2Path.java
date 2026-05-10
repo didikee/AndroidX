@@ -32,7 +32,6 @@ final class Uri2Path {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private static String getPathSDK19(Context context, Uri uri) {
         // DocumentProvider
         if (DocumentsContract.isDocumentUri(context, uri)) {

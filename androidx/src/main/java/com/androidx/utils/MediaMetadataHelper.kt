@@ -432,108 +432,112 @@ internal object MediaMetadataHelper {
             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE),
             0
         )
-        metaData.mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE) ?: ""
+        metaData.mimeType =
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE) ?: ""
     }
 
-        private fun fillCodecDataFromMediaExtractor(extractor: MediaExtractor?, metaData: VideoMetaData2) {
-            if (extractor == null) {
-                return
-            }
-            val numTracks = extractor.trackCount
-            val bitrate = metaData.bitRate // 这是在上一步 fillCodecDataFromMediaMetadataRetriever 中获取的
-            var audioSize = 0.0
-            var videoSize = 0.0
-            var audioBitrate = 0.0
-            var videoBitrate = 0.0
-            var videoDuration = 0.0
-            var audioDuration = 0.0
-            for (i in 0 until numTracks) {
-                val format = extractor.getTrackFormat(i)
-                val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
-                var bitRate = 0
-                var sampleRate = 0
-                var channelCount = 0
-                val duration: Long = 0
-                if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
-                    bitRate = getMediaFormatInt(format, MediaFormat.KEY_BIT_RATE)
-                }
-                if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
-                    sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                }
-                if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
-                    channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-                }
-                LogUtils.d("Mime: $mime sampleRate: $sampleRate channelCount: $channelCount")
-
-                if (mime.startsWith("audio/")) {
-                    if (format.containsKey(MediaFormat.KEY_DURATION)) {
-                        audioDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
-                    }
-                    audioSize = bitRate * audioDuration / (8.0)
-                    audioBitrate = bitRate.toDouble()
-                    LogUtils.d("getVideoInfo audio size: " + audioSize + " format size: " + (audioSize * 1.0 / (1024L * 1024)) + "MB")
-                }
-
-                if (mime.startsWith("video/")) {
-                    if (metaData.frameRate <= 0 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
-                        val frameRate = format.getInteger(MediaFormat.KEY_FRAME_RATE)
-                        if (frameRate > 0) {
-                            metaData.frameRate = frameRate
-                        }
-                    }
-                    if (format.containsKey(MediaFormat.KEY_DURATION)) {
-                        videoDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
-                    }
-                    if (metaData.width <= 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
-                        val width = format.getInteger(MediaFormat.KEY_WIDTH)
-                        if (width > 0) {
-                            metaData.width = width
-                        }
-                    }
-                    if (metaData.height <= 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
-                        val height = format.getInteger(MediaFormat.KEY_HEIGHT)
-                        if (height > 0) {
-                            metaData.height = height
-                        }
-                    }
-                    if (metaData.iFrameRate <= 0 && format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
-                        val iKeyRate = format.getFloat(MediaFormat.KEY_I_FRAME_INTERVAL)
-                        if (iKeyRate > 0) {
-                            metaData.iFrameRate = (iKeyRate)
-                        }
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (metaData.rotation <= 0 && format.containsKey(MediaFormat.KEY_ROTATION)) {
-                            metaData.rotation =
-                                format.getInteger(MediaFormat.KEY_ROTATION)
-                        }
-                    }
-
-                    if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
-                        bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE)
-                        if (metaData.bitRate <= 0 && bitRate > 0) {
-                            metaData.bitRate = bitRate
-                        }
-                    }
-
-                    if (metaData.colorFormat <= 0 && format.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
-                        val colorFormat = format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
-                        if (colorFormat != 0) {
-                            metaData.colorFormat = colorFormat
-                        }
-                    }
-                    videoSize = bitRate * duration / SECOND
-                    LogUtils.d("getVideoInfo video size: $videoSize")
-                }
-            } /*end*/
-            metaData.audioBitrate = audioBitrate
-            val fileSize = 0 // 如何获取文件大小？
-            if (fileSize > 0 && videoDuration > 0) {
-                val fileBitrate = (fileSize * 8.0 / videoDuration)
-                LogUtils.d("getVideoInfo file bitrate: $fileBitrate/bps")
-                videoBitrate = (fileSize - audioSize) * 8.0 / videoDuration
-                metaData.videoBitrate = videoBitrate
-                LogUtils.d("getVideoInfo video bitrate: $videoBitrate/bps")
-            }
+    private fun fillCodecDataFromMediaExtractor(
+        extractor: MediaExtractor?,
+        metaData: VideoMetaData2
+    ) {
+        if (extractor == null) {
+            return
         }
+        val numTracks = extractor.trackCount
+        val bitrate = metaData.bitRate // 这是在上一步 fillCodecDataFromMediaMetadataRetriever 中获取的
+        var audioSize = 0.0
+        var videoSize = 0.0
+        var audioBitrate = 0.0
+        var videoBitrate = 0.0
+        var videoDuration = 0.0
+        var audioDuration = 0.0
+        for (i in 0 until numTracks) {
+            val format = extractor.getTrackFormat(i)
+            val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
+            var bitRate = 0
+            var sampleRate = 0
+            var channelCount = 0
+            val duration: Long = 0
+            if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                bitRate = getMediaFormatInt(format, MediaFormat.KEY_BIT_RATE)
+            }
+            if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+            }
+            if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+            }
+            LogUtils.d("Mime: $mime sampleRate: $sampleRate channelCount: $channelCount")
+
+            if (mime.startsWith("audio/")) {
+                if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                    audioDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
+                }
+                audioSize = bitRate * audioDuration / (8.0)
+                audioBitrate = bitRate.toDouble()
+                LogUtils.d("getVideoInfo audio size: " + audioSize + " format size: " + (audioSize * 1.0 / (1024L * 1024)) + "MB")
+            }
+
+            if (mime.startsWith("video/")) {
+                if (metaData.frameRate <= 0 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+                    val frameRate = format.getInteger(MediaFormat.KEY_FRAME_RATE)
+                    if (frameRate > 0) {
+                        metaData.frameRate = frameRate
+                    }
+                }
+                if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                    videoDuration = format.getLong(MediaFormat.KEY_DURATION) / SECOND
+                }
+                if (metaData.width <= 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
+                    val width = format.getInteger(MediaFormat.KEY_WIDTH)
+                    if (width > 0) {
+                        metaData.width = width
+                    }
+                }
+                if (metaData.height <= 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
+                    val height = format.getInteger(MediaFormat.KEY_HEIGHT)
+                    if (height > 0) {
+                        metaData.height = height
+                    }
+                }
+                if (metaData.iFrameRate <= 0 && format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
+                    val iKeyRate = format.getFloat(MediaFormat.KEY_I_FRAME_INTERVAL)
+                    if (iKeyRate > 0) {
+                        metaData.iFrameRate = (iKeyRate)
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (metaData.rotation <= 0 && format.containsKey(MediaFormat.KEY_ROTATION)) {
+                        metaData.rotation =
+                            format.getInteger(MediaFormat.KEY_ROTATION)
+                    }
+                }
+
+                if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                    bitRate = format.getInteger(MediaFormat.KEY_BIT_RATE)
+                    if (metaData.bitRate <= 0 && bitRate > 0) {
+                        metaData.bitRate = bitRate
+                    }
+                }
+
+                if (metaData.colorFormat <= 0 && format.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
+                    val colorFormat = format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
+                    if (colorFormat != 0) {
+                        metaData.colorFormat = colorFormat
+                    }
+                }
+                videoSize = bitRate * duration / SECOND
+                LogUtils.d("getVideoInfo video size: $videoSize")
+            }
+        } /*end*/
+        metaData.audioBitrate = audioBitrate
+        val fileSize = 0 // 如何获取文件大小？
+        if (fileSize > 0 && videoDuration > 0) {
+            val fileBitrate = (fileSize * 8.0 / videoDuration)
+            LogUtils.d("getVideoInfo file bitrate: $fileBitrate/bps")
+            videoBitrate = (fileSize - audioSize) * 8.0 / videoDuration
+            metaData.videoBitrate = videoBitrate
+            LogUtils.d("getVideoInfo video bitrate: $videoBitrate/bps")
+        }
+    }
 }
